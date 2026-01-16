@@ -10,3 +10,12 @@ Add the SSL files and rebuild the something something pem.
 
 I assume that we are dealing with a Ubuntu 24.04 VM fresh out of the door. See prepare_vm for the preparations necessary. 
 
+# Make the docker network
+
+
+
+# Mattermost docker image
+
+We need the mattermost docker image to start the docker containers via up.sh
+
+build_mattermost_docker
