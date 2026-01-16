@@ -1,0 +1,31 @@
+--- original_files/server/Makefile	2026-01-09 18:37:53.000000000 +0100
++++ enterprise_replace/server/Makefile	2026-01-16 00:09:28.529463009 +0100
+@@ -56,27 +56,10 @@
+ 
+ # Enterprise
+ BUILD_ENTERPRISE_DIR ?= ../../enterprise
+-BUILD_ENTERPRISE ?= true
++BUILD_ENTERPRISE ?= false
+ BUILD_ENTERPRISE_READY = false
+ BUILD_TYPE_NAME = team
+ BUILD_HASH_ENTERPRISE = none
+-ifneq ($(wildcard $(BUILD_ENTERPRISE_DIR)/.),)
+-	MMCTL_TESTFLAGS += -ldflags '-X "$(MMCTL_PKG).EnableEnterpriseTests=true" -X "github.com/mattermost/mattermost/server/public/model.BuildEnterpriseReady=true"'
+-	MMCTL_BUILD_TAGS += enterprise
+-
+-  ifeq ($(BUILD_ENTERPRISE),true)
+-	BUILD_ENTERPRISE_READY = true
+-	BUILD_TYPE_NAME = enterprise
+-	BUILD_HASH_ENTERPRISE = $(shell cd $(BUILD_ENTERPRISE_DIR) && git rev-parse HEAD)
+-	BUILD_TAGS += enterprise
+-  else
+-	BUILD_ENTERPRISE_READY = false
+-	BUILD_TYPE_NAME = team
+-  endif
+-else
+-	BUILD_ENTERPRISE_READY = false
+-	BUILD_TYPE_NAME = team
+-endif
+ 
+ FIPS_ENABLED ?= false
+ ifeq ($(FIPS_ENABLED),true)
