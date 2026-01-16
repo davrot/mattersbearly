@@ -4,7 +4,10 @@ tar -xzf mattermost_source.tar.gz
 
 cp Dockerfile mattermost-11.2.2
 cp build.sh mattermost-11.2.2
+cp -r enterprise_replace mattermost-11.2.2/enterprise_replace
 cd mattermost-11.2.2
 git init
 git branch -m main
+chmod +x build_stage.sh
+./build_stage.sh
 ```
