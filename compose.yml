@@ -1,0 +1,91 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: postgres
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 100
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql
+    environment:
+      TZ: CET
+      POSTGRES_USER: mmuser
+      POSTGRES_PASSWORD: REDACTED
+      POSTGRES_DB: mattermost
+    networks:
+      - mattermost-network
+
+  mattermost:
+    container_name: mattermost
+    depends_on:
+      - postgres
+    image: mattermost-final:latest
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 200
+    read_only: false
+    tmpfs:
+      - /tmp
+    volumes:
+      - ./mattermost/config:/mattermost/config:rw
+      - ./mattermost/data:/mattermost/data:rw
+      - ./mattermost/logs:/mattermost/logs:rw
+      - ./mattermost/plugins:/mattermost/plugins:rw
+      - ./mattermost/client/plugins:/mattermost/client/plugins:rw
+      - ./mattermost/bleve-indexes:/mattermost/bleve-indexes:rw
+    environment:
+      TZ: CET
+      MM_SQLSETTINGS_DRIVERNAME: postgres
+      MM_SQLSETTINGS_DATASOURCE: postgres://mmuser:REDACTED@postgres:5432/mattermost?sslmode=disable&connect_timeout=10
+
+      MM_SERVICESETTINGS_SITEURL: https://mattermost.neuro.uni-bremen.de
+      MM_BLEVESETTINGS_INDEXDIR: /mattermost/bleve-indexes
+
+    ports:
+      - 8443:8443/udp
+      - 8443:8443/tcp
+
+    networks:
+      - mattermost-network
+
+  nginx:
+    depends_on:
+      - mattermost
+    container_name: nginx
+    image: nginx:alpine
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 100
+    read_only: true
+    tmpfs:
+      - /var/run
+      - /var/cache
+      - /var/log/nginx
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/dhparams4096.pem:/dhparams4096.pem
+      - ./nginx/crt.pem:/cert.pem:ro
+      - ./nginx/key.pem:/key.pem:ro
+      - ./shared-webroot:/usr/share/nginx/html
+
+    environment:
+      TZ: CET
+
+    ports:
+      - 80:80
+      - 443:443
+
+    networks:
+      - mattermost-network
+
+networks:
+  mattermost-network:
+    external: true
+
