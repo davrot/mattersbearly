@@ -32,6 +32,8 @@ go mod download
 cd ${BASEDIR}/server
 make build-linux BUILD_HASH=local-dev BUILD_NUMBER=999.9.9
 
+nvm install 20 
+nvm use 20
 cd ${BASEDIR}/webapp
 make dist
 
