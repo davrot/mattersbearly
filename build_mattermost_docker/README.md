@@ -1,15 +1,19 @@
-First
+# First
 ```
 chmod +x ./extract_code.sh
 ./extract_code.sh
 ```
 
-Second:
+# Second
+
+## Build with docker
 
 ```
 cd mattersource
 build_with_docker.sh
 ```
+
+## Build without docker
 
 ```
 cd mattersource
