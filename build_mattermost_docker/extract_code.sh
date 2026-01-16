@@ -9,8 +9,12 @@ rm -rf enterprise_replace
 
 cp -r enterprise_replace mattersource
 cp build_without_docker.sh mattersource
+cp build_with_docker.sh mattersource
+cp Dockerfile mattersource
 
 cd mattersource
 git init
 git branch -m main
+chmod +x build_without_docker.sh
+chmod +x build_with_docker.sh
 
