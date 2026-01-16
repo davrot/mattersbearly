@@ -1,4 +1,5 @@
-wget -N https://github.com/mattermost/mattermost/archive/refs/tags/v11.3.0.tar.gz -O mattermost_source.tar.gz
+export MATTERMOST_VERSION="11.3.0"
+wget -N https://github.com/mattermost/mattermost/archive/refs/tags/v${MATTERMOST_VERSION}.tar.gz -O mattermost_source.tar.gz
 rm -rf mattersource
 mkdir mattersource
 tar -xzf mattermost_source.tar.gz -C mattersource --strip-components=1
