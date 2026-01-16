@@ -1,4 +1,7 @@
 # First
+
+Set version-Number in first line  of extract_code.sh
+
 ```
 chmod +x ./extract_code.sh
 ./extract_code.sh
