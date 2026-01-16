@@ -1,7 +1,17 @@
-Alte Notizen:
+First
 ```
-cp Dockerfile mattermost-11.2.2
-cp build_stage.sh mattermost-11.2.2
-chmod +x build_stage.sh
-./build_stage.sh
+chmod +x ./extract_code.sh
+./extract_code.sh
+```
+
+Second:
+
+```
+cd mattersource
+build_with_docker.sh
+```
+
+```
+cd mattersource
+build_without_docker.sh
 ```
