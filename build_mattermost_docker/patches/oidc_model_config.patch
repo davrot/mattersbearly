@@ -1,0 +1,77 @@
+--- ./tmp_original_source/server/public/model/config.go	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/server/public/model/config.go	2026-01-16 15:35:42.001762340 +0100
+@@ -3966,6 +3966,7 @@
+ 	GoogleSettings              SSOSettings
+ 	Office365Settings           Office365Settings
+ 	OpenIdSettings              SSOSettings
++    OIDCSettings                OIDCSettings
+ 	LdapSettings                LdapSettings
+ 	ComplianceSettings          ComplianceSettings
+ 	LocalizationSettings        LocalizationSettings
+@@ -4057,6 +4058,7 @@
+ 
+ 	o.LdapSettings.SetDefaults()
+ 	o.SamlSettings.SetDefaults()
++    o.OIDCSettings.SetDefaults()
+ 
+ 	if o.TeamSettings.TeammateNameDisplay == nil {
+ 		o.TeamSettings.TeammateNameDisplay = NewPointer(ShowUsername)
+@@ -5399,3 +5401,58 @@
+ 
+ 	return true
+ }
++
++type OIDCSettings struct {
++    Enable                     *bool   `access:"authentication_openid"`
++    Secret                     *string `access:"authentication_openid" json:"secret,omitempty"` // telemetry: none
++    Id                         *string `access:"authentication_openid"`
++    Scope                      *string `access:"authentication_openid"`
++    DiscoveryEndpoint          *string `access:"authentication_openid"`
++    ButtonText                 *string `access:"authentication_openid"`
++    ButtonColor                *string `access:"authentication_openid"`
++    UpdateUserDetailsOnLogin   *bool   `access:"authentication_openid"`
++    AllowedEmailDomains        *string `access:"authentication_openid"`
++    AdminGroupNames            *string `access:"authentication_openid"`
++}
++
++func (s *OIDCSettings) SetDefaults() {
++    if s.Enable == nil {
++        s.Enable = NewPointer(false)
++    }
++
++    if s.Scope == nil {
++        s.Scope = NewPointer("openid profile email")
++    }
++
++    if s.DiscoveryEndpoint == nil {
++        s.DiscoveryEndpoint = NewPointer("")
++    }
++
++    if s.Id == nil {
++        s.Id = NewPointer("")
++    }
++
++    if s.Secret == nil {
++        s.Secret = NewPointer("")
++    }
++
++    if s.ButtonText == nil {
++        s.ButtonText = NewPointer("OIDC")
++    }
++
++    if s.ButtonColor == nil {
++        s.ButtonColor = NewPointer("#145DBF")
++    }
++
++    if s.UpdateUserDetailsOnLogin == nil {
++        s.UpdateUserDetailsOnLogin = NewPointer(true)
++    }
++
++    if s.AllowedEmailDomains == nil {
++        s.AllowedEmailDomains = NewPointer("")
++    }
++
++    if s.AdminGroupNames == nil {
++        s.AdminGroupNames = NewPointer("")
++    }
++}

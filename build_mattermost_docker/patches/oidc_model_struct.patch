@@ -1,0 +1,47 @@
+--- ./tmp_original_source/server/public/model/oidc.go	1970-01-01 01:00:00.000000000 +0100
++++ ./changed_files/server/public/model/oidc.go	2026-01-16 15:52:47.929840083 +0100
+@@ -0,0 +1,44 @@
++package model
++
++import (
++    "errors"
++)
++
++type OIDCUser struct {
++    Sub                       string   `json:"sub"`
++    Email                     string   `json:"mail"`
++    EmailVerified             bool     `json:"email_verified"`
++    GivenName                 string   `json:"givenName"`
++    FamilyName                string   `json:"sn"`
++    CommonName                string   `json:"cn"`
++    UID                       string   `json:"uid"`
++    UIDNumber                 string   `json:"uidNumber"`
++    Groups                    []string `json:"group"`
++    EduPersonPrincipalName    string   `json:"eduPersonPrincipalName"`
++    EduPersonAffiliation      string   `json:"eduPersonAffiliation"`
++    EduPersonScopedAffiliation string  `json:"eduPersonScopedAffiliation"`
++    EduPersonEntitlement      string   `json:"eduPersonEntitlement"`
++    EduPersonOrgUnitDN        string   `json:"eduPersonOrgUnitDN"`
++    EduPersonUniqueId         string   `json:"eduPersonUniqueId"`
++    EduPersonAssurance        string   `json:"eduPersonAssurance"`
++    ZfnScopedAffiliation      string   `json:"zfnScopedAffiliation"`
++    ZfnGender                 string   `json:"zfnGender"`
++    ZfnPersID                 string   `json:"zfnPersID"`
++    SamlSubjectID             string   `json:"samlSubjectID"`
++    SamlPairwiseID            string   `json:"samlPairwiseID"`
++}
++
++func (ou *OIDCUser) IsValid() error {
++    if ou.Sub == "" {
++        return errors.New("user subject (sub) cannot be empty")
++    }
++    if ou.Email == "" {
++        return errors.New("user email should not be empty")
++    }
++    return nil
++}
++
++func (ou *OIDCUser) GetAuthData() string { // Capitalized 'G' to export it
++    return ou.Sub
++}
++

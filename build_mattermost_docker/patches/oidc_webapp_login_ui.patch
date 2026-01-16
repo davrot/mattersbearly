@@ -1,0 +1,25 @@
+--- ./tmp_original_source/webapp/channels/src/components/login/login.tsx	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/webapp/channels/src/components/login/login.tsx	2026-01-16 16:37:47.491841083 +0100
+@@ -156,6 +156,22 @@
+     const getExternalLoginOptions = () => {
+         const externalLoginOptions: ExternalLoginButtonType[] = [];
+ 
++        // Add to getExternalLoginOptions() function
++        if (enableSignUpWithOIDC) {
++            const url = `${Client4.getOAuthRoute()}/oidc/login${search}`;
++            externalLoginOptions.push({
++                id: 'oidc',
++                url,
++                icon: <LoginOpenIDIcon/>,
++                label: OIDCButtonText || formatMessage({id: 'login.oidc', defaultMessage: 'Single Sign-On'}),
++                style: {color: OIDCButtonColor, borderColor: OIDCButtonColor},
++                onClick: handleExternalAuth(url, 'oidc'),
++            });
++            // DAVROT: We disable the rest 
++            return externalLoginOptions; 
++        }
++
++
+         if (!enableExternalSignup) {
+             return externalLoginOptions;
+         }

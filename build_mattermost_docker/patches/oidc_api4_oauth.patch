@@ -1,0 +1,79 @@
+--- ./tmp_original_source/server/channels/api4/oauth.go	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/server/channels/api4/oauth.go	2026-01-16 16:18:45.417586845 +0100
+@@ -6,6 +6,7 @@
+ import (
+ 	"encoding/json"
+ 	"net/http"
++    "errors"
+ 
+ 	"github.com/mattermost/mattermost/server/public/model"
+ 	"github.com/mattermost/mattermost/server/public/shared/mlog"
+@@ -24,6 +25,10 @@
+ 	api.BaseRoutes.OAuthApps.Handle("/register", api.RateLimitedHandler(api.APIHandler(registerOAuthClient), model.RateLimitSettings{PerSec: model.NewPointer(2), MaxBurst: model.NewPointer(1)})).Methods(http.MethodPost)
+ 
+ 	api.BaseRoutes.User.Handle("/oauth/apps/authorized", api.APISessionRequired(getAuthorizedOAuthApps)).Methods(http.MethodGet)
++
++    api.BaseRoutes.OAuth.Handle("/oidc/login", api.APIHandler(oidcLogin)).Methods("GET")
++    api.BaseRoutes.OAuth.Handle("/oidc/complete", api.APIHandler(completeOIDC)).Methods("GET", "POST")
++    api.BaseRoutes.OAuth.Handle("/oidc/metadata", api.APIHandler(getOIDCMetadata)).Methods("GET")
+ }
+ 
+ func createOAuthApp(c *Context, w http.ResponseWriter, r *http.Request) {
+@@ -428,3 +433,57 @@
+ 		c.Logger.Warn("Error writing DCR response", mlog.Err(err))
+ 	}
+ }
++
++func oidcLogin(c *Context, w http.ResponseWriter, r *http.Request) {
++    if !*c.App.Config().OIDCSettings.Enable {
++        c.Err = model.NewAppError("oidcLogin", "api.oauth.oidc_login.disabled.app_error", nil, "", http.StatusNotImplemented)
++        return
++    }
++
++    state := model.NewId()
++    
++    // Store state in session for verification
++    c.App.SetOAuthState(state)
++    
++    authURL := c.App.GetOIDCAuthURL(state)
++    http.Redirect(w, r, authURL, http.StatusFound)
++}
++
++func completeOIDC(c *Context, w http.ResponseWriter, r *http.Request) {
++    code := r.URL.Query().Get("code")
++    state := r.URL.Query().Get("state")
++    
++    if !c.App.VerifyOAuthState(state) {
++        c.Err = model.NewAppError("completeOIDC", "api.oauth.invalid_state.app_error", nil, "", http.StatusBadRequest)
++        return
++    }
++    
++    user, err := c.App.CompleteOIDCLogin(c.AppContext, code, state)
++    if err != nil {
++        var appErr *model.AppError
++        if errors.As(err, &appErr) {
++            c.Err = appErr
++        } else {
++            c.Err = model.NewAppError("completeOIDC", "api.oauth.complete_oidc.app_error", nil, err.Error(), http.StatusInternalServerError)
++        }
++        return
++    }
++    
++    c.App.DoLogin(c.AppContext, w, r, user, "", false, false, false)
++    c.App.AttachSessionCookies(c.AppContext, w, r)
++    
++    ReturnStatusOK(w)
++}
++
++func getOIDCMetadata(c *Context, w http.ResponseWriter, r *http.Request) {
++    cfg := c.App.Config()
++    
++    metadata := map[string]string{
++        "discovery_endpoint": *cfg.OIDCSettings.DiscoveryEndpoint,
++        "button_text":        *cfg.OIDCSettings.ButtonText,
++        "button_color":       *cfg.OIDCSettings.ButtonColor,
++    }
++    
++    w.Write([]byte(model.MapToJSON(metadata)))
++}
++

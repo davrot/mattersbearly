@@ -1,0 +1,386 @@
+--- ./tmp_original_source/server/channels/app/oidc.go	1970-01-01 01:00:00.000000000 +0100
++++ ./changed_files/server/channels/app/oidc.go	2026-01-16 16:22:48.520852774 +0100
+@@ -0,0 +1,383 @@
++// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
++// See LICENSE.txt for license information.
++
++package app
++
++import (
++	"context"
++	"encoding/json"
++	"errors"
++	"strings"
++    "strconv"
++
++	"github.com/coreos/go-oidc/v3/oidc"
++	"golang.org/x/oauth2"
++
++	"github.com/mattermost/mattermost/server/public/model"
++	"github.com/mattermost/mattermost/server/public/shared/mlog"
++	"github.com/mattermost/mattermost/server/public/shared/request"
++)
++
++const (
++	OIDCAuthService = "oidc"
++)
++
++// InitializeOIDCProvider initializes the OIDC provider
++func (a *App) InitializeOIDCProvider() error {
++	cfg := a.Config()
++	
++	if !*cfg.OIDCSettings.Enable {
++		return nil
++	}
++
++	provider, err := oidc.NewProvider(context.Background(), *cfg.OIDCSettings.DiscoveryEndpoint)
++	if err != nil {
++		return err
++	}
++
++	oauth2Config := oauth2.Config{
++		ClientID:     *cfg.OIDCSettings.Id,
++		ClientSecret: *cfg.OIDCSettings.Secret,
++		RedirectURL:  *cfg.ServiceSettings.SiteURL + "/oauth/oidc/complete",
++		Endpoint:     provider.Endpoint(),
++		Scopes:       strings.Split(*cfg.OIDCSettings.Scope, " "),
++	}
++
++	verifier := provider.Verifier(&oidc.Config{ClientID: *cfg.OIDCSettings.Id})
++
++	a.oidcProvider = provider
++	a.oidcConfig = &oauth2Config
++	a.oidcVerifier = verifier
++
++	return nil
++}
++
++// CompleteOIDCLogin handles the OIDC callback and creates/updates user
++func (a *App) CompleteOIDCLogin(c request.CTX, code, state string) (*model.User, error) {
++	if a.oidcConfig == nil || a.oidcVerifier == nil {
++		return nil, errors.New("OIDC not configured")
++	}
++
++	// Exchange code for token
++	oauth2Token, err := a.oidcConfig.Exchange(context.Background(), code)
++	if err != nil {
++		return nil, err
++	}
++
++	// Extract ID Token
++	rawIDToken, ok := oauth2Token.Extra("id_token").(string)
++	if !ok {
++		return nil, errors.New("no id_token in token response")
++	}
++
++	// Verify ID Token
++	idToken, err := a.oidcVerifier.Verify(context.Background(), rawIDToken)
++	if err != nil {
++		return nil, err
++	}
++
++	// Extract claims
++	var claims map[string]interface{}
++	if err := idToken.Claims(&claims); err != nil {
++		return nil, err
++	}
++
++	// Convert claims to OIDCUser
++	oidcUser, err := a.parseOIDCClaims(claims)
++	if err != nil {
++		return nil, err
++	}
++
++	// Find or create user
++	user, err := a.FindOrCreateOIDCUser(c, oidcUser, rawIDToken)
++	if err != nil {
++		return nil, err
++	}
++
++	// Update user details if configured
++	if *a.Config().OIDCSettings.UpdateUserDetailsOnLogin {
++		err = a.UpdateUserFromOIDC(c, user, oidcUser)
++		if err != nil {
++			c.Logger().Warn("Failed to update user details from OIDC", mlog.Err(err))
++		}
++	}
++
++	// Assign roles based on groups if configured
++	if err := a.AssignRolesFromOIDCGroups(c, user, oidcUser.Groups); err != nil {
++		c.Logger().Warn("Failed to assign roles from OIDC groups", mlog.Err(err))
++	}
++
++	return user, nil
++}
++
++func (a *App) parseOIDCClaims(claims map[string]interface{}) (*model.OIDCUser, error) {
++	// Convert map to JSON and back to struct for easy parsing
++	jsonData, err := json.Marshal(claims)
++	if err != nil {
++		return nil, err
++	}
++
++	var oidcUser model.OIDCUser
++	if err := json.Unmarshal(jsonData, &oidcUser); err != nil {
++		return nil, err
++	}
++
++	// Handle 'email' claim if 'mail' is not present
++	if oidcUser.Email == "" {
++		if email, ok := claims["email"].(string); ok {
++			oidcUser.Email = email
++		}
++	}
++
++	return &oidcUser, nil
++}
++
++// FindOrCreateOIDCUser finds an existing user or creates a new one
++func (a *App) FindOrCreateOIDCUser(c request.CTX, oidcUser *model.OIDCUser, idToken string) (*model.User, error) {
++	authData := oidcUser.Sub
++	
++	// Try to find user by auth_data and auth_service
++	user, err := a.Srv().Store().User().GetByAuth(&authData, OIDCAuthService)
++	if err == nil {
++		return user, nil
++	}
++
++	// User not found by auth_data, try to find by email
++	user, err = a.Srv().Store().User().GetByEmail(oidcUser.Email)
++	if err != nil {
++		// User doesn't exist, check if auto-creation is allowed
++		if !a.isEmailDomainAllowed(oidcUser.Email) {
++			return nil, errors.New("user auto-creation not allowed for this email domain")
++		}
++
++		// Create new user
++		user = &model.User{
++			Email:         strings.ToLower(oidcUser.Email),
++			EmailVerified: oidcUser.EmailVerified,
++			Username:      a.generateUsernameFromOIDC(oidcUser),
++			FirstName:     oidcUser.GivenName,
++			LastName:      oidcUser.FamilyName,
++			AuthService:   OIDCAuthService,
++			AuthData:      &authData,
++			Props:         make(map[string]string),
++		}
++
++		// Store Keycloak attributes
++		a.setUserPropsFromOIDC(user, oidcUser)
++
++		createdUser, appErr := a.CreateUser(c, user)
++		if appErr != nil {
++			return nil, appErr
++		}
++
++		return createdUser, nil
++	}
++
++	// User exists but not linked to OIDC, link the account
++	if user.AuthService == "" || user.AuthService == model.UserAuthServiceEmail {
++		user.AuthService = OIDCAuthService
++		user.AuthData = &authData
++		user.EmailVerified = true
++
++		// Store Keycloak attributes
++		a.setUserPropsFromOIDC(user, oidcUser)
++
++		if _, appErr := a.Srv().Store().User().Update(c, user, true); appErr != nil {
++			return nil, appErr
++		}
++
++		return user, nil
++	}
++
++	// User exists with different auth service
++	return nil, errors.New("user already exists with different authentication method")
++}
++
++func (a *App) generateUsernameFromOIDC(oidcUser *model.OIDCUser) string {
++    var username string
++    
++    if oidcUser.UID != "" {
++        username = oidcUser.UID
++    } else if oidcUser.EduPersonPrincipalName != "" {
++        username = strings.Split(oidcUser.EduPersonPrincipalName, "@")[0]
++    } else if oidcUser.CommonName != "" {
++        username = oidcUser.CommonName
++    } else {
++        username = strings.Split(oidcUser.Email, "@")[0]
++    }
++
++    cleanUsername := model.CleanUsername(a.Log(), username)
++
++    suggestedUsername := cleanUsername
++    for i := 1; i < 100; i++ {
++        // Check if username exists
++        if _, err := a.Srv().Store().User().GetByUsername(suggestedUsername); err != nil {
++            // If error occurs (specifically 'not found'), this name is safe to use
++            return suggestedUsername
++        }
++        // Increment username: e.g., "john", "john1", "john2"...
++        suggestedUsername = cleanUsername + strconv.Itoa(i) 
++    }
++
++    return cleanUsername
++}
++
++func (a *App) setUserPropsFromOIDC(user *model.User, oidcUser *model.OIDCUser) {
++	if user.Props == nil {
++		user.Props = make(map[string]string)
++	}
++
++	if oidcUser.EduPersonAffiliation != "" {
++		user.Props["eduPersonAffiliation"] = oidcUser.EduPersonAffiliation
++	}
++	if oidcUser.EduPersonEntitlement != "" {
++		user.Props["eduPersonEntitlement"] = oidcUser.EduPersonEntitlement
++	}
++	if oidcUser.ZfnScopedAffiliation != "" {
++		user.Props["zfnScopedAffiliation"] = oidcUser.ZfnScopedAffiliation
++	}
++	if oidcUser.EduPersonOrgUnitDN != "" {
++		user.Props["eduPersonOrgUnitDN"] = oidcUser.EduPersonOrgUnitDN
++	}
++	if oidcUser.UIDNumber != "" {
++		user.Props["uidNumber"] = oidcUser.UIDNumber
++	}
++	if len(oidcUser.Groups) > 0 {
++		groupsJSON, _ := json.Marshal(oidcUser.Groups)
++		user.Props["keycloakGroups"] = string(groupsJSON)
++	}
++}
++
++func (a *App) isEmailDomainAllowed(email string) bool {
++	cfg := a.Config()
++	
++	if cfg.OIDCSettings.AllowedEmailDomains == nil || len(*cfg.OIDCSettings.AllowedEmailDomains) == 0 {
++		return true // Allow all domains if not configured
++	}
++
++	domain := strings.Split(email, "@")
++	if len(domain) != 2 {
++		return false
++	}
++
++	userDomain := strings.ToLower(domain[1])
++	allowedDomains := strings.Split(*cfg.OIDCSettings.AllowedEmailDomains, ",")
++
++	for _, allowedDomain := range allowedDomains {
++		allowedDomain = strings.TrimSpace(strings.ToLower(allowedDomain))
++		
++		// Support wildcard subdomains: *.example.com
++		if strings.HasPrefix(allowedDomain, "*.") {
++			baseDomain := strings.TrimPrefix(allowedDomain, "*.")
++			if strings.HasSuffix(userDomain, baseDomain) {
++				return true
++			}
++		} else if userDomain == allowedDomain {
++			return true
++		}
++	}
++
++	return false
++}
++
++// UpdateUserFromOIDC updates user details from OIDC on each login
++func (a *App) UpdateUserFromOIDC(c request.CTX, user *model.User, oidcUser *model.OIDCUser) error {
++	user.FirstName = oidcUser.GivenName
++	user.LastName = oidcUser.FamilyName
++	user.Email = strings.ToLower(oidcUser.Email)
++	user.EmailVerified = oidcUser.EmailVerified
++
++	a.setUserPropsFromOIDC(user, oidcUser)
++
++	if _, appErr := a.Srv().Store().User().Update(c, user, true); appErr != nil {
++		return appErr
++	}
++
++	return nil
++}
++
++// AssignRolesFromOIDCGroups assigns system admin role based on group membership
++func (a *App) AssignRolesFromOIDCGroups(c request.CTX, user *model.User, groups []string) error {
++	cfg := a.Config()
++	
++	if cfg.OIDCSettings.AdminGroupNames == nil || *cfg.OIDCSettings.AdminGroupNames == "" {
++		return nil // No admin groups configured
++	}
++
++	adminGroups := strings.Split(*cfg.OIDCSettings.AdminGroupNames, ",")
++	isAdmin := false
++
++	for _, group := range groups {
++		for _, adminGroup := range adminGroups {
++			if strings.TrimSpace(group) == strings.TrimSpace(adminGroup) {
++				isAdmin = true
++				break
++			}
++		}
++		if isAdmin {
++			break
++		}
++	}
++
++	// Update user roles if needed
++	if isAdmin && !user.IsInRole(model.SystemAdminRoleId) {
++		user.Roles = user.Roles + " " + model.SystemAdminRoleId
++	} else if !isAdmin && user.IsInRole(model.SystemAdminRoleId) {
++		user.Roles = strings.Replace(user.Roles, model.SystemAdminRoleId, "", 1)
++		user.Roles = strings.TrimSpace(user.Roles)
++	} else {
++		return nil // No change needed
++	}
++
++	if _, appErr := a.Srv().Store().User().Update(c, user, true); appErr != nil {
++		return appErr
++	}
++
++	return nil
++}
++
++func (a *App) SetOAuthState(state string) {
++    // Store the state in the web session cache for 15 minutes.
++    // We use a prefix to avoid collisions with other OAuth providers.
++    a.Srv().Store().Token().Save(&model.Token{
++        Token:    state,
++        Type:     "oidc_state_" + state,
++        Extra:    "",
++        CreateAt: model.GetMillis(),
++    })
++}
++
++func (a *App) VerifyOAuthState(state string) bool {
++// Try to find the token in the store
++    token, err := a.Srv().Store().Token().GetByToken(state)
++    if err != nil {
++        return false
++    }
++
++    // Ensure it's the right type
++    if token.Type != "oidc_state_"+state {
++        return false
++    }
++
++    // Delete the token so it can't be reused (One-time use)
++    a.Srv().Store().Token().Delete(state)
++
++    // Check if it's expired (older than 15 minutes)
++    if model.GetMillis()-token.CreateAt > 15*60*1000 {
++        return false
++    }
++
++    return true
++}
++
++func (a *App) GetOIDCAuthURL(state string) string {
++    if a.oidcConfig == nil {
++        // Try to re-initialize if it was missed during startup
++        if err := a.InitializeOIDCProvider(); err != nil || a.oidcConfig == nil {
++            return ""
++        }
++    }
++    // AuthCodeURL generates the URL for the user to visit Keycloak/OIDC
++    return a.oidcConfig.AuthCodeURL(state, oauth2.AccessTypeOffline)
++}
++

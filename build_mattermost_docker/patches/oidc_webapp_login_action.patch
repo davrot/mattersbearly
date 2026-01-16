@@ -1,0 +1,13 @@
+--- ./tmp_original_source/webapp/channels/src/actions/views/login.ts	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/webapp/channels/src/actions/views/login.ts	2026-01-16 16:39:32.779956804 +0100
+@@ -81,3 +81,10 @@
+         }
+     };
+ }
++
++export function completeOIDCLogin(code: string, state: string): ActionFuncAsync {
++    return async (dispatch) => {
++        return performLogin(dispatch, () => Client4.completeOIDCLogin(code, state));
++    };
++}
++

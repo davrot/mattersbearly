@@ -16,7 +16,13 @@ echo "Extracting source files..."
 tar -xf "$SOURCE_TAR" --wildcards --strip-components=1 -C "$OUTPUT_DIR" \
     "*/server/Makefile" \
     "*/server/cmd/mmctl/commands/compliance_export.go" \
-    "*/server/cmd/mattermost/main.go"
+    "*/server/cmd/mattermost/main.go" \
+    "*/server/channels/api4/oauth.go" \
+    "*/server/channels/app/app.go" \
+    "*/server/public/model/config.go" \
+    "*/webapp/channels/src/components/login/login.tsx" \
+    "*/webapp/channels/src/actions/views/login.ts" \
+    "*/webapp/platform/client/src/client4.ts"
 
 # 3. Apply the patches
 echo "Applying patches..."
@@ -26,6 +32,16 @@ if [ -f "$OUTPUT_DIR/server/Makefile" ]; then
     patch "$OUTPUT_DIR/server/Makefile" < "$PATCH_DIR/server_makefile.patch"
     patch "$OUTPUT_DIR/server/cmd/mmctl/commands/compliance_export.go" < "$PATCH_DIR/compliance_export.patch"
     patch "$OUTPUT_DIR/server/cmd/mattermost/main.go" < "$PATCH_DIR/main_go.patch"
+    patch "$OUTPUT_DIR/server/channels/api4/oauth.go" < "$PATCH_DIR/oidc_api4_oauth.patch"
+    patch "$OUTPUT_DIR/server/channels/app/oidc.go" < "$PATCH_DIR/oidc_app_logic.patch"
+    patch "$OUTPUT_DIR/server/channels/app/app.go" < "$PATCH_DIR/oidc_app_struct.patch"
+    patch "$OUTPUT_DIR/server/public/model/config.go" < "$PATCH_DIR/oidc_model_config.patch"
+    patch "$OUTPUT_DIR/server/public/model/oidc.go" < "$PATCH_DIR/oidc_model_struct.patch"
+    patch "$OUTPUT_DIR/server/einterfaces/oidc.go" < "$PATCH_DIR/oidc_einterfaces.patch"
+    patch "$OUTPUT_DIR/webapp/channels/src/components/login/login.tsx" < "$PATCH_DIR/oidc_webapp_login_ui.patch"
+    patch "$OUTPUT_DIR/webapp/channels/src/actions/views/login.ts" < "$PATCH_DIR/oidc_webapp_login_action.patch"
+    patch "$OUTPUT_DIR/webapp/platform/client/src/client4.ts" < "$PATCH_DIR/oidc_webapp_client.patch"
+
     echo "Done! Modified files are ready in $OUTPUT_DIR"
 else
     echo "Error: Files were not extracted correctly. Check the tarball content."

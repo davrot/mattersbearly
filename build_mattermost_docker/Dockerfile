@@ -1,19 +1,6 @@
 FROM mattermost/mattermost-build-server:1.24.11 AS builder
 
 COPY . /mattermost
-RUN rm -rf /mattermost/server/enterprise
-COPY ./enterprise_replace/server/cmd/mmctl/commands/compliance_export.go /mattermost/server/cmd/mmctl/commands/compliance_export.go
-COPY ./enterprise_replace/server/cmd/mattermost/main.go /mattermost/server/cmd/mattermost/main.go
-COPY ./enterprise_replace/server/Makefile /mattermost/server/Makefile
-
-# Create stub directories for enterprise packages to satisfy imports
-RUN mkdir -p /mattermost/server/enterprise/metrics \
-    && mkdir -p /mattermost/server/enterprise/message_export/shared
-
-# Create a dummy file in the main enterprise stub
-RUN echo "package enterprise" > /mattermost/server/enterprise/enterprise.go \
-    && echo "package metrics" > /mattermost/server/enterprise/metrics/metrics.go \
-    && echo "package shared" > /mattermost/server/enterprise/message_export/shared/shared.go
 
 WORKDIR /mattermost/server
 RUN go mod edit -replace github.com/mattermost/mattermost/server/public=./public
