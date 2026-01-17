@@ -17,6 +17,7 @@ echo "package metrics" > mattersource/server/enterprise/metrics/metrics.go
 echo "package shared" > mattersource/server/enterprise/message_export/shared/shared.go
 
 rm -rf mattersource/server/cmd/mmctl/commands/compliance
+rm -f mattersource/server/cmd/mmctl/commands/compliance_export.go
 
 cp -rvf ./enterprise_replace/* mattersource/
 
