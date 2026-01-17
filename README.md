@@ -1,3 +1,7 @@
+# WARNING!!!
+
+**This is just a Proof of Concept. Not a fork of Mattermost. Don't use until this code you have removed the Mattermost brand (logo and name).**
+
 # Change postgress password
 
 You need to change the postgress password in compose.yaml at two places. Look for the placeholder REDACTED.
