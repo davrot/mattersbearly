@@ -1,0 +1,52 @@
+--- ./tmp_original_source/webapp/channels/src/components/header_footer_route/footer.tsx	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/webapp/channels/src/components/header_footer_route/footer.tsx	2026-01-17 22:57:54.499132998 +0100
+@@ -26,48 +26,8 @@
+                 key='footer-copyright'
+                 className='footer-copyright'
+             >
+-                {`© ${new Date().getFullYear()} Mattermost Inc.`}
++                {`© ${new Date().getFullYear()} Mattersbearly`}
+             </span>
+-            {AboutLink && (
+-                <ExternalLink
+-                    key='footer-link-about'
+-                    className='footer-link'
+-                    href={AboutLink}
+-                    location='footer'
+-                >
+-                    {formatMessage({id: 'web.footer.about', defaultMessage: 'About'})}
+-                </ExternalLink>
+-            )}
+-            {PrivacyPolicyLink && (
+-                <ExternalLink
+-                    key='footer-link-privacy'
+-                    className='footer-link'
+-                    href={PrivacyPolicyLink}
+-                    location='footer'
+-                >
+-                    {formatMessage({id: 'web.footer.privacy', defaultMessage: 'Privacy Policy'})}
+-                </ExternalLink>
+-            )}
+-            {TermsOfServiceLink && (
+-                <ExternalLink
+-                    key='footer-link-terms'
+-                    className='footer-link'
+-                    href={TermsOfServiceLink}
+-                    location='footer'
+-                >
+-                    {formatMessage({id: 'web.footer.terms', defaultMessage: 'Terms'})}
+-                </ExternalLink>
+-            )}
+-            {HelpLink && (
+-                <ExternalLink
+-                    key='footer-link-help'
+-                    className='footer-link'
+-                    href={HelpLink}
+-                    location='footer'
+-                >
+-                    {formatMessage({id: 'web.footer.help', defaultMessage: 'Help'})}
+-                </ExternalLink>
+-            )}
+         </div>
+     );
+ };
