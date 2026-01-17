@@ -4,6 +4,8 @@
 
 **This is just a Proof of Concept. Not a fork of Mattermost. Don't use this code until you have removed the Mattermost brand (logo and name).**
 
+Tested with mattermost version 11.3.0.
+
 # Goal
 
 - Remove the user limit
