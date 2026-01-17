@@ -20,6 +20,7 @@ rm -rf mattersource/server/cmd/mmctl/commands/compliance
 rm -f mattersource/server/cmd/mmctl/commands/compliance_export.go
 
 cp -rvf ./enterprise_replace/* mattersource/
+cp -f logo/* mattersource/webapp/channels/src/images
 
 cp build_without_docker.sh mattersource
 cp build_with_docker.sh mattersource
