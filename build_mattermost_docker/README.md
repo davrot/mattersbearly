@@ -1,3 +1,7 @@
+# Warning !!!
+
+**First user that logs in is automatically set by mattermost as admin user.**
+
 # First
 
 Set version-Number in first line  of extract_code.sh
