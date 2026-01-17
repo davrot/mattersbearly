@@ -18,6 +18,12 @@ go mod download
 cd ${BASEDIR}/server
 make build-linux BUILD_HASH=local-dev BUILD_NUMBER=999.9.9
 
+export NVM_DIR="$HOME/.nvm"
+. "$NVM_DIR/nvm.sh"
+
+nvm install 20
+nvm use 20
+
 cd ${BASEDIR}/webapp
 make dist
 

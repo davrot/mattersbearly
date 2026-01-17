@@ -1,9 +1,14 @@
 --- ./tmp_original_source/webapp/channels/src/components/login/login.tsx	2026-01-05 09:02:00.000000000 +0100
-+++ ./changed_files/webapp/channels/src/components/login/login.tsx	2026-01-16 16:37:47.491841083 +0100
-@@ -156,6 +156,22 @@
++++ ./changed_files/webapp/channels/src/components/login/login.tsx	2026-01-17 00:05:47.407522079 +0100
+@@ -156,6 +156,27 @@
      const getExternalLoginOptions = () => {
          const externalLoginOptions: ExternalLoginButtonType[] = [];
  
++        // OIDC Login - Check if enabled in config
++        const enableSignUpWithOIDC = config.EnableSignUpWithOIDC === 'true';
++        const OIDCButtonText = config.OIDCButtonText || 'Single Sign-On';
++        const OIDCButtonColor = config.OIDCButtonColor || '#145DBF';
++
 +        // Add to getExternalLoginOptions() function
 +        if (enableSignUpWithOIDC) {
 +            const url = `${Client4.getOAuthRoute()}/oidc/login${search}`;

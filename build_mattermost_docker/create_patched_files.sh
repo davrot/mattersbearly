@@ -20,6 +20,8 @@ tar -xf "$SOURCE_TAR" --wildcards --strip-components=1 -C "$OUTPUT_DIR" \
     "*/server/channels/api4/oauth.go" \
     "*/server/channels/app/app.go" \
     "*/server/public/model/config.go" \
+    "*/server/config/client.go" \
+    "*/server/channels/app/server.go" \
     "*/webapp/channels/src/components/login/login.tsx" \
     "*/webapp/channels/src/actions/views/login.ts" \
     "*/webapp/platform/client/src/client4.ts"
@@ -38,6 +40,8 @@ if [ -f "$OUTPUT_DIR/server/Makefile" ]; then
     patch "$OUTPUT_DIR/server/public/model/config.go" < "$PATCH_DIR/oidc_model_config.patch"
     patch "$OUTPUT_DIR/server/public/model/oidc.go" < "$PATCH_DIR/oidc_model_struct.patch"
     patch "$OUTPUT_DIR/server/einterfaces/oidc.go" < "$PATCH_DIR/oidc_einterfaces.patch"
+    patch "$OUTPUT_DIR/server/config/client.go" < "$PATCH_DIR/oidc_server_config.patch"
+    patch "$OUTPUT_DIR/server/channels/app/server.go" < "$PATCH_DIR/oidc_app_server.patch"
     patch "$OUTPUT_DIR/webapp/channels/src/components/login/login.tsx" < "$PATCH_DIR/oidc_webapp_login_ui.patch"
     patch "$OUTPUT_DIR/webapp/channels/src/actions/views/login.ts" < "$PATCH_DIR/oidc_webapp_login_action.patch"
     patch "$OUTPUT_DIR/webapp/platform/client/src/client4.ts" < "$PATCH_DIR/oidc_webapp_client.patch"

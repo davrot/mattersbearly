@@ -1,0 +1,35 @@
+--- ./tmp_original_source/server/channels/app/server.go	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/server/channels/app/server.go	2026-01-16 20:49:30.845164468 +0100
+@@ -825,6 +825,12 @@
+ 		mlog.Error("Error to reset the server status.", mlog.Err(err))
+ 	}
+ 
++    // Initialize OIDC provider if configured
++    if err := s.initializeOIDC(); err != nil {
++        // Just log the error, don't fail startup
++        mlog.Warn("OIDC initialization had issues", mlog.Err(err))
++    }
++
+ 	if s.MailServiceConfig().SendEmailNotifications {
+ 		if err := mail.TestConnection(s.MailServiceConfig()); err != nil {
+ 			mlog.Error("Mail server connection test failed", mlog.Err(err))
+@@ -1855,3 +1861,19 @@
+ func (s *Server) Log() *mlog.Logger {
+ 	return s.platform.Logger()
+ }
++
++func (s *Server) initializeOIDC() error {
++    // Create App instance using the same pattern as other parts of the code
++    appInstance := New(ServerConnector(s.Channels()))
++    
++    // Try to initialize OIDC
++    if err := appInstance.InitializeOIDCProvider(); err != nil {
++        // Don't return error - just log it
++        // OIDC might not be configured, which is fine
++        mlog.Info("OIDC provider not initialized (may not be configured)", mlog.Err(err))
++    } else {
++        mlog.Info("OIDC provider successfully initialized")
++    }
++    
++    return nil
++}
