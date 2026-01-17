@@ -1,3 +1,5 @@
+![Matterbearly Logo](build_mattermost_docker/logo/logo.svg)
+
 # WARNING!!!
 
 **This is just a Proof of Concept. Not a fork of Mattermost. Don't use this code until you have removed the Mattermost brand (logo and name).**
