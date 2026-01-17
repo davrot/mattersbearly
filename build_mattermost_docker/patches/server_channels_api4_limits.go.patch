@@ -1,0 +1,38 @@
+--- ./tmp_original_source/server/channels/api4/limits.go	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/server/channels/api4/limits.go	2026-01-17 13:36:42.890168536 +0100
+@@ -7,8 +7,6 @@
+ 	"encoding/json"
+ 	"net/http"
+ 
+-	"github.com/mattermost/mattermost/server/public/model"
+-
+ 	"github.com/mattermost/mattermost/server/public/shared/mlog"
+ )
+ 
+@@ -17,26 +15,12 @@
+ }
+ 
+ func getServerLimits(c *Context, w http.ResponseWriter, r *http.Request) {
+-	isAdmin := c.IsSystemAdmin() && c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PermissionSysconsoleReadUserManagementUsers)
+-
+ 	serverLimits, err := c.App.GetServerLimits()
+ 	if err != nil {
+ 		c.Err = err
+ 		return
+ 	}
+ 
+-	// Non-admin users only get message history limit information, no user count data
+-	if !isAdmin {
+-		limitedData := &model.ServerLimits{
+-			MaxUsersLimit:          0,
+-			MaxUsersHardLimit:      0,
+-			ActiveUserCount:        0,
+-			LastAccessiblePostTime: serverLimits.LastAccessiblePostTime,
+-			PostHistoryLimit:       serverLimits.PostHistoryLimit,
+-		}
+-		serverLimits = limitedData
+-	}
+-
+ 	if err := json.NewEncoder(w).Encode(serverLimits); err != nil {
+ 		c.Logger.Warn("Error writing server limits response", mlog.Err(err))
+ 	}

@@ -1,0 +1,11 @@
+--- ./tmp_original_source/server/cmd/mattermost/main.go	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/server/cmd/mattermost/main.go	2026-01-17 13:28:00.609408940 +0100
+@@ -12,8 +12,6 @@
+ 	// Plugins
+ 	_ "github.com/mattermost/mattermost/server/v8/channels/app/oauthproviders/gitlab"
+ 
+-	// Enterprise Imports
+-	_ "github.com/mattermost/mattermost/server/v8/enterprise"
+ )
+ 
+ func main() {

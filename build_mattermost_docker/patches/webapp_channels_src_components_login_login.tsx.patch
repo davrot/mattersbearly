@@ -1,0 +1,51 @@
+--- ./tmp_original_source/webapp/channels/src/components/login/login.tsx	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/webapp/channels/src/components/login/login.tsx	2026-01-17 13:28:00.610408941 +0100
+@@ -104,6 +104,9 @@
+         ExperimentalPrimaryTeam,
+         ForgotPasswordLink,
+         PasswordEnableForgotLink,
++        EnableSignUpWithOIDC,
++        OIDCButtonText,
++        OIDCButtonColor,
+     } = useSelector(getConfig);
+     const {IsLicensed} = useSelector(getLicense);
+     const initializing = useSelector((state: GlobalState) => state.requests.users.logout.status === RequestStatus.SUCCESS || !state.storage.initialized);
+@@ -146,16 +149,34 @@
+     const enableSignUpWithSaml = isLicensed && enableSaml;
+     const siteName = SiteName ?? '';
+ 
+-    const enableBaseLogin = enableSignInWithEmail || enableSignInWithUsername || ldapEnabled;
+-    const enableExternalSignup = enableSignUpWithGitLab || enableSignUpWithOffice365 || enableSignUpWithGoogle || enableSignUpWithOpenId || enableSignUpWithSaml;
+-    const showSignup = enableOpenServer && (enableExternalSignup || enableSignUpWithEmail || enableLdap);
+-    const onlyLdapEnabled = enableLdap && !(enableSaml || enableSignInWithEmail || enableSignInWithUsername || enableSignUpWithEmail || enableSignUpWithGitLab || enableSignUpWithGoogle || enableSignUpWithOffice365 || enableSignUpWithOpenId);
++    // OIDC Login - Check if enabled in config
++    const enableSignUpWithOIDC = EnableSignUpWithOIDC === 'true' || EnableSignUpWithOIDC === true;
++    const buttonText = OIDCButtonText || 'Single Sign-On';
++    const buttonColor = OIDCButtonColor || '#145DBF';
++
++    const enableBaseLogin = (enableSignInWithEmail || enableSignInWithUsername || ldapEnabled) && !enableSignUpWithOIDC;
++    const enableExternalSignup = enableSignUpWithGitLab || enableSignUpWithOffice365 || enableSignUpWithGoogle || enableSignUpWithOpenId || enableSignUpWithSaml || enableSignUpWithOIDC;
++    const showSignup = enableOpenServer && (enableExternalSignup || enableSignUpWithEmail || enableLdap) && !enableSignUpWithOIDC;;
++    const onlyLdapEnabled = enableLdap && !(enableSaml || enableSignInWithEmail || enableSignInWithUsername || enableSignUpWithEmail || enableSignUpWithGitLab || enableSignUpWithGoogle || enableSignUpWithOffice365 || enableSignUpWithOpenId || enableSignUpWithOIDC);
+ 
+     const [desktopLoginLink, setDesktopLoginLink] = useState('');
+ 
+     const getExternalLoginOptions = () => {
+         const externalLoginOptions: ExternalLoginButtonType[] = [];
+ 
++        if (enableSignUpWithOIDC) {
++            // Use the API route that triggers state generation
++            const url = `${Client4.getOAuthRoute()}/oidc/login${search}`;
++            externalLoginOptions.push({
++                id: 'oidc',
++                url,
++                icon: <LoginOpenIDIcon/>,
++                label: buttonText,
++                style: {color: buttonColor, borderColor: buttonColor},
++                onClick: handleExternalAuth(url, 'oidc'),
++            });
++        }
++
+         if (!enableExternalSignup) {
+             return externalLoginOptions;
+         }

@@ -1,0 +1,32 @@
+--- /dev/null	2026-01-16 20:30:19.621000000 +0100
++++ ./changed_files/server/public/model/oidc.go	2026-01-17 13:28:00.610408941 +0100
+@@ -0,0 +1,29 @@
++package model
++
++import (
++    "errors"
++)
++
++type OIDCUser struct {
++    Sub           string `json:"sub"`
++    Email         string `json:"email"`          
++    EmailVerified bool   `json:"email_verified"`
++    GivenName     string `json:"given_name"`     
++    FamilyName    string `json:"family_name"`
++    Nickname      string `json:"preferred_username"`
++}
++
++func (ou *OIDCUser) IsValid() error {
++    if ou.Sub == "" {
++        return errors.New("user subject (sub) cannot be empty")
++    }
++    if ou.Email == "" {
++        return errors.New("user email should not be empty")
++    }
++    return nil
++}
++
++func (ou *OIDCUser) GetAuthData() string { // Capitalized 'G' to export it
++    return ou.Sub
++}
++

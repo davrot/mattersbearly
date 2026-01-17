@@ -1,0 +1,25 @@
+--- ./tmp_original_source/server/channels/web/oauth.go	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/server/channels/web/oauth.go	2026-01-17 13:28:00.609408940 +0100
+@@ -304,6 +304,12 @@
+ 
+ 	service := c.Params.Service
+ 
++    // Explicitly allow oidc service if configured
++    if service == "oidc" && !*c.App.Config().OIDCSettings.Enable {
++        c.Err = model.NewAppError("completeOAuth", "api.oauth.singup_with_oauth.disabled.app_error", nil, "", http.StatusNotImplemented)
++        return
++    }
++
+ 	auditRec := c.MakeAuditRecord(model.AuditEventCompleteOAuth, model.AuditStatusFail)
+ 	defer c.LogAuditRec(auditRec)
+ 	model.AddEventParameterToAuditRec(auditRec, "service", service)
+@@ -328,7 +334,8 @@
+ 
+ 	state := r.URL.Query().Get("state")
+ 
+-	uri := c.GetSiteURLHeader() + "/signup/" + service + "/complete"
++	// uri := c.GetSiteURLHeader() + "/signup/" + service + "/complete"
++    uri := c.GetSiteURLHeader() + "/oauth/" + service + "/complete"
+ 
+ 	body, props, tokenUser, err := c.App.AuthorizeOAuthUser(c.AppContext, w, r, service, code, state, uri)
+ 

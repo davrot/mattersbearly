@@ -1,0 +1,35 @@
+--- ./tmp_original_source/server/config/client.go	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/server/config/client.go	2026-01-17 13:28:00.610408941 +0100
+@@ -252,6 +252,10 @@
+ 		}
+ 	}
+ 
++    props["EnableSignUpWithOIDC"] = strconv.FormatBool(*c.OIDCSettings.Enable)
++    props["OIDCButtonText"] = *c.OIDCSettings.ButtonText
++    props["OIDCButtonColor"] = *c.OIDCSettings.ButtonColor
++
+ 	return props
+ }
+ 
+@@ -356,6 +360,9 @@
+ 	props["EnableSignUpWithOpenId"] = "false"
+ 	props["OpenIdButtonText"] = ""
+ 	props["OpenIdButtonColor"] = ""
++    props["EnableSignUpWithOIDC"] = "false"
++    props["OIDCButtonText"] = ""
++    props["OIDCButtonColor"] = ""
+ 	props["CWSURL"] = ""
+ 	props["EnableCustomBrand"] = strconv.FormatBool(*c.TeamSettings.EnableCustomBrand)
+ 	props["CustomBrandText"] = *c.TeamSettings.CustomBrandText
+@@ -444,6 +451,11 @@
+ 		props["FeatureFlag"+key] = value
+ 	}
+ 
++    // OIDC is available in Team Edition (no license required)
++    props["EnableSignUpWithOIDC"] = strconv.FormatBool(*c.OIDCSettings.Enable)
++    props["OIDCButtonText"] = *c.OIDCSettings.ButtonText
++    props["OIDCButtonColor"] = *c.OIDCSettings.ButtonColor
++
+ 	return props
+ }
+ 

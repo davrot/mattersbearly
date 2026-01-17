@@ -1,0 +1,153 @@
+--- /dev/null	2026-01-16 20:30:19.621000000 +0100
++++ ./changed_files/server/einterfaces/oidc.go	2026-01-17 13:28:00.609408940 +0100
+@@ -0,0 +1,150 @@
++// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
++// See LICENSE.txt for license information.
++
++package einterfaces
++
++import (
++	"context"
++	"encoding/json"
++	"errors"
++	"io"
++	"strings"
++
++	"github.com/coreos/go-oidc/v3/oidc"
++	"golang.org/x/oauth2"
++
++	"github.com/mattermost/mattermost/server/public/model"
++	"github.com/mattermost/mattermost/server/public/shared/mlog"
++	"github.com/mattermost/mattermost/server/public/shared/request"
++)
++
++const (
++	UserAuthServiceOIDC = "oidc"
++)
++
++type OIDCProvider struct {
++	provider *oidc.Provider
++	verifier *oidc.IDTokenVerifier
++	config   *oauth2.Config
++}
++
++func init() {
++	provider := &OIDCProvider{}
++	RegisterOAuthProvider(UserAuthServiceOIDC, provider)
++}
++
++func (op *OIDCProvider) GetUserFromJSON(rctx request.CTX, data io.Reader, tokenUser *model.User) (*model.User, error) {
++	var oidcUser model.OIDCUser
++	decoder := json.NewDecoder(data)
++	if err := decoder.Decode(&oidcUser); err != nil {
++		return nil, err
++	}
++
++	if err := oidcUser.IsValid(); err != nil {
++		return nil, err
++	}
++
++	return userFromOIDCUser(rctx.Logger(), &oidcUser), nil
++}
++
++func (op *OIDCProvider) GetUserFromIdToken(rctx request.CTX, idToken string) (*model.User, error) {
++	if op.verifier == nil {
++        rctx.Logger().Debug("OIDC verifier missing, attempting lazy initialization")
++		return nil, errors.New("OIDC provider not initialized")
++	}
++
++	token, err := op.verifier.Verify(context.Background(), idToken)
++	if err != nil {
++		return nil, err
++	}
++
++    // --- NEW DEBUG BLOCK ---
++    var rawClaims map[string]interface{}
++    if err := token.Claims(&rawClaims); err == nil {
++        rctx.Logger().Debug("DEBUG: RAW OIDC CLAIMS FROM KEYCLOAK", mlog.Any("claims", rawClaims))
++    }
++
++	var oidcUser model.OIDCUser
++	if err := token.Claims(&oidcUser); err != nil {
++		return nil, err
++	}
++
++	if err := oidcUser.IsValid(); err != nil {
++		return nil, err
++	}
++
++	return userFromOIDCUser(rctx.Logger(), &oidcUser), nil
++}
++
++func (op *OIDCProvider) GetSSOSettings(rctx request.CTX, config *model.Config, service string) (*model.SSOSettings, error) {
++    // Ensure we have a base URL without a trailing slash
++    base := strings.TrimSuffix(*config.OIDCSettings.DiscoveryEndpoint, "/")
++
++    return &model.SSOSettings{
++        Enable: config.OIDCSettings.Enable,
++        Secret: config.OIDCSettings.Secret,
++        Id:     config.OIDCSettings.Id,
++        Scope:  config.OIDCSettings.Scope,
++        
++        // Construct the full Keycloak protocol paths
++        AuthEndpoint:    model.NewPointer(base + "/protocol/openid-connect/auth"),
++        TokenEndpoint:   model.NewPointer(base + "/protocol/openid-connect/token"),
++        UserAPIEndpoint: model.NewPointer(base + "/protocol/openid-connect/userinfo"),
++        
++        ButtonText:  config.OIDCSettings.ButtonText,
++        ButtonColor: config.OIDCSettings.ButtonColor,
++    }, nil
++}
++
++func (op *OIDCProvider) IsSameUser(rctx request.CTX, dbUser, oauthUser *model.User) bool {
++	return dbUser.AuthData == oauthUser.AuthData
++}
++
++func userFromOIDCUser(logger mlog.LoggerIFace, oidcUser *model.OIDCUser) *model.User {
++
++    logger.Debug("OIDC User Claims received", mlog.Any("oidc_user", oidcUser))
++
++    user := &model.User{}
++    
++    // 1. Basic Information
++    user.FirstName = oidcUser.GivenName
++    user.LastName = oidcUser.FamilyName
++    user.Email = strings.ToLower(oidcUser.Email)
++    user.EmailVerified = oidcUser.EmailVerified
++
++    // 2. Username Logic (Priority: Nickname/preferred_username > Email Prefix)
++    username := oidcUser.Nickname
++    if username == "" {
++        username = strings.Split(oidcUser.Email, "@")[0]
++    }
++    user.Username = model.CleanUsername(logger, username)
++
++    // 3. Auth Data (Crucial for linking accounts)
++    userId := oidcUser.Sub
++    user.AuthData = &userId
++    user.AuthService = UserAuthServiceOIDC
++
++    return user
++}
++
++func (op *OIDCProvider) Initialize(discoveryEndpoint, clientId string) error {
++    // If already initialized with a provider, don't redo the network call
++    if op.provider != nil && op.verifier != nil {
++        return nil 
++    }
++
++    provider, err := oidc.NewProvider(context.Background(), discoveryEndpoint)
++    if err != nil {
++        return err
++    }
++
++    op.provider = provider
++    // Create the verifier using the clientId passed from the config
++    op.verifier = provider.Verifier(&oidc.Config{ClientID: clientId})
++    
++    return nil
++}
++
++
++
++

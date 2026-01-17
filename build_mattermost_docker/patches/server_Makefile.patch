@@ -1,0 +1,303 @@
+--- ./tmp_original_source/server/Makefile	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/server/Makefile	2026-01-17 13:28:00.610408941 +0100
+@@ -1,4 +1,4 @@
+-.PHONY: build package run stop run-client run-server run-node run-haserver stop-haserver stop-client stop-server restart restart-server restart-client restart-haserver start-docker update-docker clean-dist clean nuke check-style check-client-style check-server-style check-unit-tests test dist run-client-tests setup-run-client-tests cleanup-run-client-tests test-client build-linux build-osx build-windows package-prep package-linux package-osx package-windows internal-test-web-client vet run-server-for-web-client-tests diff-config prepackaged-plugins prepackaged-binaries test-server test-server-ee test-server-quick test-server-race test-mmctl-unit test-mmctl-e2e test-mmctl test-mmctl-coverage mmctl-build mmctl-docs new-migration migrations-extract test-public mocks-public
++.PHONY: build package run stop run-client run-server run-node run-haserver stop-haserver stop-client stop-server restart restart-server restart-client restart-haserver start-docker update-docker clean-dist clean nuke check-style check-client-style check-server-style check-unit-tests test dist run-client-tests setup-run-client-tests cleanup-run-client-tests test-client build-linux build-osx build-windows package-prep package-linux package-osx package-windows internal-test-web-client vet run-server-for-web-client-tests diff-config prepackaged-binaries test-server test-server-quick test-server-race test-mmctl-unit test-mmctl-e2e test-mmctl test-mmctl-coverage mmctl-build mmctl-docs new-migration migrations-extract test-public mocks-public
+ 
+ ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+ 
+@@ -56,27 +56,10 @@
+ 
+ # Enterprise
+ BUILD_ENTERPRISE_DIR ?= ../../enterprise
+-BUILD_ENTERPRISE ?= true
++BUILD_ENTERPRISE ?= false
+ BUILD_ENTERPRISE_READY = false
+ BUILD_TYPE_NAME = team
+ BUILD_HASH_ENTERPRISE = none
+-ifneq ($(wildcard $(BUILD_ENTERPRISE_DIR)/.),)
+-	MMCTL_TESTFLAGS += -ldflags '-X "$(MMCTL_PKG).EnableEnterpriseTests=true" -X "github.com/mattermost/mattermost/server/public/model.BuildEnterpriseReady=true"'
+-	MMCTL_BUILD_TAGS += enterprise
+-
+-  ifeq ($(BUILD_ENTERPRISE),true)
+-	BUILD_ENTERPRISE_READY = true
+-	BUILD_TYPE_NAME = enterprise
+-	BUILD_HASH_ENTERPRISE = $(shell cd $(BUILD_ENTERPRISE_DIR) && git rev-parse HEAD)
+-	BUILD_TAGS += enterprise
+-  else
+-	BUILD_ENTERPRISE_READY = false
+-	BUILD_TYPE_NAME = team
+-  endif
+-else
+-	BUILD_ENTERPRISE_READY = false
+-	BUILD_TYPE_NAME = team
+-endif
+ 
+ FIPS_ENABLED ?= false
+ ifeq ($(FIPS_ENABLED),true)
+@@ -150,40 +133,7 @@
+ 
+ TEMPLATES_DIR=templates
+ 
+-# Plugins Packages
+-PLUGIN_PACKAGES ?= $(PLUGIN_PACKAGES:)
+-PLUGIN_PACKAGES += mattermost-plugin-calls-v1.11.0
+-PLUGIN_PACKAGES += mattermost-plugin-github-v2.5.0
+-PLUGIN_PACKAGES += mattermost-plugin-gitlab-v1.11.0
+-PLUGIN_PACKAGES += mattermost-plugin-jira-v4.5.0
+-PLUGIN_PACKAGES += mattermost-plugin-playbooks-v2.6.1
+-PLUGIN_PACKAGES += mattermost-plugin-servicenow-v2.4.0
+-PLUGIN_PACKAGES += mattermost-plugin-zoom-v1.11.0
+-PLUGIN_PACKAGES += mattermost-plugin-agents-v1.7.2
+-PLUGIN_PACKAGES += mattermost-plugin-boards-v9.2.1
+-PLUGIN_PACKAGES += mattermost-plugin-user-survey-v1.1.1
+-PLUGIN_PACKAGES += mattermost-plugin-mscalendar-v1.5.0
+-PLUGIN_PACKAGES += mattermost-plugin-msteams-meetings-v2.3.0
+-PLUGIN_PACKAGES += mattermost-plugin-metrics-v0.7.0
+-PLUGIN_PACKAGES += mattermost-plugin-channel-export-v1.3.0
+-
+-# Overwrite the definition of PLUGIN_PACKAGES with the list of FIPS-ready plugins
+-# Note that the '+' in the file name is encoded as %2B for the URL we use to
+-# download the package from to work. This will no longer be needed when we unify
+-# the way we pre-package FIPS and non-FIPS plugins.
+-ifeq ($(FIPS_ENABLED),true)
+-	PLUGIN_PACKAGES  = mattermost-plugin-playbooks-v2.6.1%2B0e01d28-fips
+-	PLUGIN_PACKAGES += mattermost-plugin-agents-v1.7.2%2B866e2dd-fips
+-	PLUGIN_PACKAGES += mattermost-plugin-boards-v9.2.1%2Bdf49b26-fips
+-endif
+-
+-EE_PACKAGES=$(shell $(GO) list $(BUILD_ENTERPRISE_DIR)/...)
+-
+-ifeq ($(BUILD_ENTERPRISE_READY),true)
+-  ALL_PACKAGES=$(TE_PACKAGES) $(EE_PACKAGES)
+-else
+-  ALL_PACKAGES=$(TE_PACKAGES)
+-endif
++ALL_PACKAGES=$(TE_PACKAGES)
+ 
+ CONFIG_FILE_PATH ?= ./config/config.json
+ 
+@@ -231,11 +181,6 @@
+   ifeq (,$(findstring minio,$(ENABLED_DOCKER_SERVICES)))
+     TEMP_DOCKER_SERVICES:=$(TEMP_DOCKER_SERVICES) minio
+   endif
+-  ifeq ($(BUILD_ENTERPRISE_READY),true)
+-    ifeq (,$(findstring openldap,$(ENABLED_DOCKER_SERVICES)))
+-      TEMP_DOCKER_SERVICES:=$(TEMP_DOCKER_SERVICES) openldap
+-    endif
+-  endif
+   ENABLED_DOCKER_SERVICES:=$(ENABLED_DOCKER_SERVICES) $(TEMP_DOCKER_SERVICES)
+ endif
+ 
+@@ -299,20 +244,8 @@
+ plugin-checker:
+ 	$(GO) run $(GOFLAGS) ./public/plugin/checker
+ 
+-prepackaged-plugins: ## Populate the prepackaged-plugins directory.
+-	@echo Downloading prepackaged plugins: $(PLUGIN_PACKAGES)
+-	mkdir -p prepackaged_plugins
+-	@cd prepackaged_plugins && for plugin_package in $(PLUGIN_PACKAGES) ; do \
+-		curl -f -O -L https://plugins.releases.mattermost.com/release/$$plugin_package.tar.gz; \
+-		curl -f -O -L https://plugins.releases.mattermost.com/release/$$plugin_package.tar.gz.sig; \
+-	done
+-
+ prepackaged-binaries: ## Populate the prepackaged-binaries to the bin directory
+-ifeq ($(shell test -f bin/mmctl && printf "yes"),yes)
+-	@echo "MMCTL already exists in bin/mmctl, not compiling."
+-else
+ 	$(MAKE) mmctl-build
+-endif
+ 
+ golang-versions: ## Install Golang versions used for compatibility testing (e.g. plugins)
+ 	@for version in $(GO_COMPATIBILITY_TEST_VERSIONS); do \
+@@ -323,11 +256,7 @@
+ 
+ golangci-lint: ## Run golangci-lint on codebase
+ 	$(GO) install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.6.0
+-ifeq ($(BUILD_ENTERPRISE_READY),true)
+-	$(GOBIN)/golangci-lint run ./... ./public/... $(BUILD_ENTERPRISE_DIR)/...
+-else
+ 	$(GOBIN)/golangci-lint run ./... ./public/...
+-endif
+ 
+ i18n-extract: ## Extract strings for translation from the source code
+ 	cd ../tools/mmgotool && $(GO) install .
+@@ -359,10 +288,6 @@
+ 	$(GO) install github.com/vektra/mockery/v2/...@v2.53.4
+ 	$(GOBIN)/mockery --config platform/shared/filestore/.mockery.yaml
+ 
+-ldap-mocks: ## Creates mock files for ldap.
+-	$(GO) install github.com/vektra/mockery/v2/...@v2.53.4
+-	$(GOBIN)/mockery --dir $(BUILD_ENTERPRISE_DIR)/ldap --all --inpackage --note 'Regenerate this file using `make ldap-mocks`.'
+-
+ plugin-mocks: ## Creates mock files for plugins.
+ 	$(GO) install github.com/vektra/mockery/v2/...@v2.53.4
+ 	$(GOBIN)/mockery --config public/plugin/.mockery.yaml
+@@ -404,12 +329,6 @@
+ 
+ generated: mocks layers
+ 
+-check-prereqs-enterprise: setup-go-work ## Checks prerequisite software status for enterprise.
+-ifeq ($(BUILD_ENTERPRISE_READY),true)
+-	./scripts/prereq-check-enterprise.sh
+-endif
+-
+-setup-go-work: export BUILD_ENTERPRISE_READY := $(BUILD_ENTERPRISE_READY)
+ setup-go-work: ## Sets up your go.work file
+ ifneq ($(IGNORE_GO_WORK_IF_EXISTS),true)
+ 	@echo "Creating a go.work file"
+@@ -417,9 +336,6 @@
+ 	$(GO) work init
+ 	$(GO) work use .
+ 	$(GO) work use ./public
+-ifeq ($(BUILD_ENTERPRISE_READY),true)
+-	$(GO) work use ../../enterprise
+-endif
+ endif
+ 
+ check-style: plugin-checker vet golangci-lint ## Runs style/lint checks
+@@ -430,31 +346,22 @@
+ test-compile: gotestsum ## Compile tests.
+ 	@echo COMPILE TESTS
+ 
+-	for package in $(TE_PACKAGES) $(EE_PACKAGES); do \
++	for package in $(TE_PACKAGES); do \
+ 		$(GO) test $(GOFLAGS) -c $$package; \
+ 	done
+ 
+-modules-tidy: ## Tidy Go modules
+-	mv enterprise/external_imports.go enterprise/external_imports.go.orig
+-	-$(GO) mod tidy
+-	-cd public && $(GO) mod tidy
+-	mv enterprise/external_imports.go.orig enterprise/external_imports.go
+-
+-test-server-pre: check-prereqs-enterprise start-docker gotestsum golang-versions ## Runs tests.
+-ifeq ($(BUILD_ENTERPRISE_READY),true)
+-	@echo Running all tests
+-else
++test-server-pre: start-docker gotestsum golang-versions ## Runs tests.
+ 	@echo Running only TE tests
+-endif
++
+ 
+ test-server-race: export GOTESTSUM_FORMAT := $(GOTESTSUM_FORMAT)
+ test-server-race: export GOTESTSUM_JUNITFILE := $(GOTESTSUM_JUNITFILE)
+ test-server-race: export GOTESTSUM_JSONFILE := $(GOTESTSUM_JSONFILE)
+ test-server-race: test-server-pre
+ ifeq ($(IS_CI),true)
+-	GOMAXPROCS=4 $(GOBIN)/gotestsum --rerun-fails=3 --packages="$(TE_PACKAGES) $(EE_PACKAGES)" -- -race $(GOFLAGS) -timeout=3h
++	GOMAXPROCS=4 $(GOBIN)/gotestsum --rerun-fails=3 --packages="$(TE_PACKAGES)" -- -race $(GOFLAGS) -timeout=3h
+ else
+-	$(GOBIN)/gotestsum --rerun-fails=3 --packages="$(TE_PACKAGES) $(EE_PACKAGES)" -- -race $(GOFLAGS) -timeout=3h
++	$(GOBIN)/gotestsum --rerun-fails=3 --packages="$(TE_PACKAGES)" -- -race $(GOFLAGS) -timeout=3h
+ endif
+ ifneq ($(IS_CI),true)
+   ifneq ($(MM_NO_DOCKER),true)
+@@ -469,7 +376,7 @@
+ test-server: export GOTESTSUM_JUNITFILE := $(GOTESTSUM_JUNITFILE)
+ test-server: export GOTESTSUM_JSONFILE := $(GOTESTSUM_JSONFILE)
+ test-server: test-server-pre
+-	$(GOBIN)/gotestsum --rerun-fails=3 --packages="$(TE_PACKAGES) $(EE_PACKAGES)" -- $(GOFLAGS) -timeout=90m $(COVERAGE_FLAG)
++	$(GOBIN)/gotestsum --rerun-fails=3 --packages="$(TE_PACKAGES)" -- $(GOFLAGS) -timeout=90m $(COVERAGE_FLAG)
+ ifneq ($(IS_CI),true)
+   ifneq ($(MM_NO_DOCKER),true)
+     ifneq ($(TEMP_DOCKER_SERVICES),)
+@@ -479,24 +386,11 @@
+   endif
+ endif
+ 
+-test-server-ee: export GOTESTSUM_FORMAT := $(GOTESTSUM_FORMAT)
+-test-server-ee: export GOTESTSUM_JUNITFILE := $(GOTESTSUM_JUNITFILE)
+-test-server-ee: export GOTESTSUM_JSONFILE := $(GOTESTSUM_JSONFILE)
+-test-server-ee: check-prereqs-enterprise start-docker gotestsum ## Runs EE tests.
+-	@echo Running only EE tests
+-	$(GOBIN)/gotestsum --packages="$(EE_PACKAGES)" -- $(GOFLAGS) -timeout=20m
+-
+ test-server-quick: export GOTESTSUM_FORMAT := $(GOTESTSUM_FORMAT)
+ test-server-quick: export GOTESTSUM_JUNITFILE := $(GOTESTSUM_JUNITFILE)
+ test-server-quick: export GOTESTSUM_JSONFILE := $(GOTESTSUM_JSONFILE)
+-test-server-quick: check-prereqs-enterprise ## Runs only quick tests.
+-ifeq ($(BUILD_ENTERPRISE_READY),true)
+-	@echo Running all tests
+-	$(GOBIN)/gotestsum --packages="$(TE_PACKAGES) $(EE_PACKAGES)" -- $(GOFLAGS) -short
+-else
+-	@echo Running only TE tests
++test-server-quick:
+ 	$(GOBIN)/gotestsum --packages="$(TE_PACKAGES)" -- $(GOFLAGS) -short
+-endif
+ 
+ internal-test-web-client: ## Runs web client tests.
+ 	$(GO) run $(GOFLAGS) $(PLATFORM_FILES) test web_client_tests
+@@ -537,28 +431,28 @@
+ test-mmctl-unit: export GOTESTSUM_FORMAT := $(GOTESTSUM_FORMAT)
+ test-mmctl-unit: export GOTESTSUM_JUNITFILE := $(GOTESTSUM_JUNITFILE)
+ test-mmctl-unit: export GOTESTSUM_JSONFILE := $(GOTESTSUM_JSONFILE)
+-test-mmctl-unit: check-prereqs-enterprise gotestsum
++test-mmctl-unit: gotestsum
+ 	@echo Running mmctl unit tests
+ 	$(GOBIN)/gotestsum --packages="$(MMCTL_PACKAGES)" -- -tags 'unit $(MMCTL_BUILD_TAGS)' $(MMCTL_TESTFLAGS)
+ 
+ test-mmctl-e2e: export GOTESTSUM_FORMAT := $(GOTESTSUM_FORMAT)
+ test-mmctl-e2e: export GOTESTSUM_JUNITFILE := $(GOTESTSUM_JUNITFILE)
+ test-mmctl-e2e: export GOTESTSUM_JSONFILE := $(GOTESTSUM_JSONFILE)
+-test-mmctl-e2e: check-prereqs-enterprise gotestsum start-docker
++test-mmctl-e2e: gotestsum start-docker
+ 	@echo Running mmctl e2e tests
+ 	$(GOBIN)/gotestsum --packages="$(MMCTL_PACKAGES)" -- -tags 'e2e $(MMCTL_BUILD_TAGS)' $(MMCTL_TESTFLAGS)
+ 
+ test-mmctl: export GOTESTSUM_FORMAT := $(GOTESTSUM_FORMAT)
+ test-mmctl: export GOTESTSUM_JUNITFILE := $(GOTESTSUM_JUNITFILE)
+ test-mmctl: export GOTESTSUM_JSONFILE := $(GOTESTSUM_JSONFILE)
+-test-mmctl: check-prereqs-enterprise gotestsum start-docker
++test-mmctl: gotestsum start-docker
+ 	@echo Running all mmctl tests
+ 	$(GOBIN)/gotestsum --packages="$(MMCTL_PACKAGES)" -- -tags 'unit e2e $(MMCTL_BUILD_TAGS)' $(MMCTL_TESTFLAGS)
+ 
+ test-mmctl-coverage: export GOTESTSUM_FORMAT := $(GOTESTSUM_FORMAT)
+ test-mmctl-coverage: export GOTESTSUM_JUNITFILE := $(GOTESTSUM_JUNITFILE)
+ test-mmctl-coverage: export GOTESTSUM_JSONFILE := $(GOTESTSUM_JSONFILE)
+-test-mmctl-coverage: check-prereqs-enterprise gotestsum start-docker
++test-mmctl-coverage: gotestsum start-docker
+ 	@echo Running all mmctl tests with coverage
+ 	$(GOBIN)/gotestsum --packages="$(MMCTL_PACKAGES)" -- -tags 'unit e2e $(MMCTL_BUILD_TAGS)' -coverprofile=mmctlcover.out $(MMCTL_TESTFLAGS)
+ 	$(GO) tool cover -html=mmctlcover.out
+@@ -772,29 +666,15 @@
+ update-dependencies: ## Uses go get -u to update all the dependencies while holding back any that require it.
+ 	@echo Updating Dependencies
+ 
+-ifeq ($(BUILD_ENTERPRISE_READY),true)
+-	@echo Enterprise repository detected, temporarily removing external_imports.go
+-	mv enterprise/external_imports.go enterprise/external_imports.go.orig
+-endif
+-
+ 	# Update all dependencies (does not update across major versions)
+ 	$(GO) get -u ./...
+ 
+ 	# Tidy up
+ 	$(GO) mod tidy
+ 
+-ifeq ($(BUILD_ENTERPRISE_READY),true)
+-	mv enterprise/external_imports.go.orig enterprise/external_imports.go
+-endif
+-
+ vet: ## Run mattermost go vet specific checks
+ 	$(GO) install github.com/mattermost/mattermost-govet/v2@7d8db289e508999dfcac47b97c9490a0fec12d66
+ 	$(GO) vet -vettool=$(GOBIN)/mattermost-govet -structuredLogging -inconsistentReceiverName -emptyStrCmp -tFatal -configtelemetry -errorAssertions -requestCtxNaming -license -inconsistentReceiverName.ignore=session_serial_gen.go,team_member_serial_gen.go,user_serial_gen.go,utils_serial_gen.go ./...
+-ifeq ($(BUILD_ENTERPRISE_READY),true)
+-  ifneq ($(MM_NO_ENTERPRISE_LINT),true)
+-	$(GO) vet -vettool=$(GOBIN)/mattermost-govet -structuredLogging -inconsistentReceiverName -emptyStrCmp -tFatal -configtelemetry -errorAssertions -requestCtxNaming -enterpriseLicense $(BUILD_ENTERPRISE_DIR)/...
+-  endif
+-endif
+ 
+ vet-api: export GO := $(GO)
+ vet-api: export GOBIN := $(GOBIN)
+@@ -833,9 +713,6 @@
+ 
+ todo: ## Display TODO and FIXME items in the source code.
+ 	@! ag --ignore Makefile --ignore-dir runtime '(TODO|XXX|FIXME|"FIX ME")[: ]+'
+-ifeq ($(BUILD_ENTERPRISE_READY),true)
+-	@! ag --ignore Makefile --ignore-dir runtime '(TODO|XXX|FIXME|"FIX ME")[: ]+' $(BUILD_ENTERPRISE_DIR)/
+-endif
+ 
+ mmctl-build: ## Compiles and generates the mmctl binary
+ 	go build -trimpath -ldflags '$(MMCTL_LDFLAGS)' -o bin/mmctl ./cmd/mmctl

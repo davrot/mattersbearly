@@ -1,0 +1,33 @@
+--- ./tmp_original_source/server/channels/app/oauth.go	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/server/channels/app/oauth.go	2026-01-17 13:28:00.608408938 +0100
+@@ -724,6 +724,20 @@
+ }
+ 
+ func (a *App) getSSOProvider(service string) (einterfaces.OAuthProvider, *model.AppError) {
++
++    // 1. First, check if it's our custom oidc
++    if service == "oidc" {
++        provider := einterfaces.GetOAuthProvider("oidc")
++        
++        // Cast to your specific provider type to call Init
++        if oidcProvider, ok := provider.(*einterfaces.OIDCProvider); ok {
++             config := a.Config()
++             oidcProvider.Initialize(*config.OIDCSettings.DiscoveryEndpoint, *config.OIDCSettings.Id)
++        }
++        return provider, nil
++    }
++
++    // 2. Otherwise, fall back to the standard SSOSettings logic
+ 	sso := a.Config().GetSSOService(service)
+ 	if sso == nil || !*sso.Enable {
+ 		return nil, model.NewAppError("getSSOProvider", "api.user.authorize_oauth_user.unsupported.app_error", nil, "service="+service, http.StatusNotImplemented)
+@@ -978,7 +992,8 @@
+ 		siteURL = GetProtocol(r) + "://" + r.Host
+ 	}
+ 
+-	redirectURI := siteURL + "/signup/" + service + "/complete"
++	// redirectURI := siteURL + "/signup/" + service + "/complete"
++    redirectURI := siteURL + "/oauth/" + service + "/complete"
+ 
+ 	authURL := endpoint + "?response_type=code&client_id=" + clientId + "&redirect_uri=" + url.QueryEscape(redirectURI) + "&state=" + url.QueryEscape(state)
+ 

@@ -1,53 +1,40 @@
 #!/bin/bash
 
-# Configuration
 SOURCE_TAR="mattermost_source.tar.gz"
 PATCH_DIR="./patches"
 OUTPUT_DIR="./enterprise_replace"
 
-# 1. Clean up and create base output dir
 rm -rf "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 
-# 2. Extract original files from tarball 
-echo "Extracting source files..."
-# We use --wildcards to fix the error you saw
-# We use --strip-components=1 to remove the versioned top-level folder
-tar -xf "$SOURCE_TAR" --wildcards --strip-components=1 -C "$OUTPUT_DIR" \
-    "*/server/Makefile" \
-    "*/server/cmd/mmctl/commands/compliance_export.go" \
-    "*/server/cmd/mattermost/main.go" \
-    "*/server/channels/api4/oauth.go" \
-    "*/server/channels/app/app.go" \
-    "*/server/public/model/config.go" \
-    "*/server/config/client.go" \
-    "*/server/channels/app/server.go" \
-    "*/webapp/channels/src/components/login/login.tsx" \
-    "*/webapp/channels/src/actions/views/login.ts" \
-    "*/webapp/platform/client/src/client4.ts"
+echo "Step 1: Identifying target files..."
+# Get all relative paths from the patch filenames
+mapfile -t TARGET_FILES < <(ls "$PATCH_DIR"/*.patch | xargs -n1 basename | sed 's/\.patch$//' | sed 's/_/\//g')
 
-# 3. Apply the patches
-echo "Applying patches..."
+echo "Step 2: Extracting and Patching..."
+for rel_path in "${TARGET_FILES[@]}"; do
+    patch_file="$PATCH_DIR/$(echo "$rel_path" | sed 's/\//_/g').patch"
+    
+    # Ensure the target directory exists in our output folder
+    mkdir -p "$(dirname "$OUTPUT_DIR/$rel_path")"
 
-# Check if files exist before patching to avoid the "Can't reopen" error
-if [ -f "$OUTPUT_DIR/server/Makefile" ]; then
-    patch "$OUTPUT_DIR/server/Makefile" < "$PATCH_DIR/server_makefile.patch"
-    patch "$OUTPUT_DIR/server/cmd/mmctl/commands/compliance_export.go" < "$PATCH_DIR/compliance_export.patch"
-    patch "$OUTPUT_DIR/server/cmd/mattermost/main.go" < "$PATCH_DIR/main_go.patch"
-    patch "$OUTPUT_DIR/server/channels/api4/oauth.go" < "$PATCH_DIR/oidc_api4_oauth.patch"
-    patch "$OUTPUT_DIR/server/channels/app/oidc.go" < "$PATCH_DIR/oidc_app_logic.patch"
-    patch "$OUTPUT_DIR/server/channels/app/app.go" < "$PATCH_DIR/oidc_app_struct.patch"
-    patch "$OUTPUT_DIR/server/public/model/config.go" < "$PATCH_DIR/oidc_model_config.patch"
-    patch "$OUTPUT_DIR/server/public/model/oidc.go" < "$PATCH_DIR/oidc_model_struct.patch"
-    patch "$OUTPUT_DIR/server/einterfaces/oidc.go" < "$PATCH_DIR/oidc_einterfaces.patch"
-    patch "$OUTPUT_DIR/server/config/client.go" < "$PATCH_DIR/oidc_server_config.patch"
-    patch "$OUTPUT_DIR/server/channels/app/server.go" < "$PATCH_DIR/oidc_app_server.patch"
-    patch "$OUTPUT_DIR/webapp/channels/src/components/login/login.tsx" < "$PATCH_DIR/oidc_webapp_login_ui.patch"
-    patch "$OUTPUT_DIR/webapp/channels/src/actions/views/login.ts" < "$PATCH_DIR/oidc_webapp_login_action.patch"
-    patch "$OUTPUT_DIR/webapp/platform/client/src/client4.ts" < "$PATCH_DIR/oidc_webapp_client.patch"
+    # Try to extract the file from the tarball
+    # We use a wildcard to find the file regardless of the top-level folder name
+    tar -xf "$SOURCE_TAR" --wildcards -O "*/$rel_path" > "$OUTPUT_DIR/$rel_path" 2>/dev/null
 
-    echo "Done! Modified files are ready in $OUTPUT_DIR"
-else
-    echo "Error: Files were not extracted correctly. Check the tarball content."
-    exit 1
-fi
+    if [ -s "$OUTPUT_DIR/$rel_path" ]; then
+        echo "Extracted and Patching: $rel_path"
+        patch -s -N "$OUTPUT_DIR/$rel_path" < "$patch_file"
+    else
+        # If the file couldn't be extracted, it's likely a NEW file
+        echo "Creating New File: $rel_path"
+        # We use the patch to create the file from scratch
+        # Stripping any potential prefixes from the patch header
+        sed -e 's|^--- \./tmp_original_source/|--- |' -e 's|^+++ \./changed_files/|+++ |' "$patch_file" | patch -p0 -d "$OUTPUT_DIR" > /dev/null
+    fi
+done
+
+echo "---"
+echo "Final Check: Count of files in $OUTPUT_DIR"
+find "$OUTPUT_DIR" -type f | wc -l
+echo "---"

@@ -1,0 +1,32 @@
+--- ./tmp_original_source/webapp/platform/client/src/client4.ts	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/webapp/platform/client/src/client4.ts	2026-01-17 13:28:00.611408943 +0100
+@@ -4824,6 +4824,29 @@
+             {method: 'get'},
+         );
+     };
++
++    getOIDCLoginUrl = () => {
++        return `${this.getOAuthRoute()}/oidc/login${window.location.search}`;
++    };
++
++    completeOIDCLogin = (code: string, state: string) => {
++        return this.doFetch<UserProfile>(
++            `${this.getOAuthRoute()}/oidc/complete`,
++            {method: 'post', body: JSON.stringify({code, state})},
++        );
++    };
++
++    getOIDCMetadata = () => {
++        return this.doFetch<{
++            discovery_endpoint: string;
++            button_text: string;
++            button_color: string;
++        }>(
++            `${this.getOAuthRoute()}/oidc/metadata`,
++            {method: 'get'},
++        );
++    };
++
+ }
+ 
+ export function parseAndMergeNestedHeaders(originalHeaders: any) {
