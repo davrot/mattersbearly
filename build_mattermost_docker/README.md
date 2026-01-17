@@ -32,8 +32,6 @@ MM_OIDCSETTINGS_SECRET=your-secret
 MM_OIDCSETTINGS_SCOPE="openid profile email"
 MM_OIDCSETTINGS_BUTTONTEXT="Login with Keycloak"
 MM_OIDCSETTINGS_UPDATEUSERDETAILSONLOGIN=true
-MM_OIDCSETTINGS_ALLOWEDEMAILDOMAINS="example.com,*.example.org"
-MM_OIDCSETTINGS_ADMINGROUPNAMES="administrators"
 ```
 
 # Conf JSON
@@ -48,8 +46,6 @@ MM_OIDCSETTINGS_ADMINGROUPNAMES="administrators"
     "ButtonText": "Login with Keycloak",
     "ButtonColor": "#145DBF",
     "UpdateUserDetailsOnLogin": true,
-    "AllowedEmailDomains": "example.com,*.example.org",
-    "AdminGroupNames": "administrators,system-admins"
   }
 }
 ```
