@@ -16,6 +16,8 @@ echo "package enterprise" > mattersource/server/enterprise/enterprise.go
 echo "package metrics" > mattersource/server/enterprise/metrics/metrics.go
 echo "package shared" > mattersource/server/enterprise/message_export/shared/shared.go
 
+rm -rf mattersource/server/cmd/mmctl/commands/compliance
+
 cp -rvf ./enterprise_replace/* mattersource/
 
 cp build_without_docker.sh mattersource
