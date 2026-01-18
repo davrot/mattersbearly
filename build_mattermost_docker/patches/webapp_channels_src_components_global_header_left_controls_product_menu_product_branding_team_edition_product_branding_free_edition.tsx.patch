@@ -1,5 +1,14 @@
 --- ./tmp_original_source/webapp/channels/src/components/global_header/left_controls/product_menu/product_branding_team_edition/product_branding_free_edition.tsx	2026-01-05 09:02:00.000000000 +0100
-+++ ./changed_files/webapp/channels/src/components/global_header/left_controls/product_menu/product_branding_team_edition/product_branding_free_edition.tsx	2026-01-17 21:42:46.015505709 +0100
++++ ./changed_files/webapp/channels/src/components/global_header/left_controls/product_menu/product_branding_team_edition/product_branding_free_edition.tsx	2026-01-18 03:35:54.887874395 +0100
+@@ -7,7 +7,7 @@
+ 
+ import {getLicense} from 'mattermost-redux/selectors/entities/general';
+ 
+-import Logo from 'components/common/svg_images_components/logo_dark_blue_svg';
++import Logo from 'components/common/svg_images_components/logo_gray_svg';
+ 
+ import {LicenseSkus} from 'utils/constants';
+ 
 @@ -44,20 +44,12 @@
  const ProductBrandingFreeEdition = (): JSX.Element => {
      const license = useSelector(getLicense);
@@ -13,8 +22,10 @@
 -
      return (
          <ProductBrandingFreeEditionContainer tabIndex={-1}>
-             <StyledLogo
-                 width={116}
+-            <StyledLogo
+-                width={116}
++            <Logo
++                width={144}
                  height={20}
              />
 -            <Badge>{badgeText}</Badge>

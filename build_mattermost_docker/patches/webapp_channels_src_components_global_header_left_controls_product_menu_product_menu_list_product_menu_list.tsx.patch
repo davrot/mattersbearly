@@ -1,0 +1,11 @@
+--- ./tmp_original_source/webapp/channels/src/components/global_header/left_controls/product_menu/product_menu_list/product_menu_list.tsx	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/webapp/channels/src/components/global_header/left_controls/product_menu/product_menu_list/product_menu_list.tsx	2026-01-18 02:59:47.814765132 +0100
+@@ -218,7 +218,7 @@
+                     id='about'
+                     modalId={ModalIdentifiers.ABOUT}
+                     dialogType={AboutBuildModal}
+-                    text={formatMessage({id: 'navbar_dropdown.about', defaultMessage: 'About {appTitle}'}, {appTitle: siteName})}
++                    text={formatMessage({id: 'navbar_dropdown.about', defaultMessage: 'About Matterbearly'}, {appTitle: siteName})}
+                     icon={<InformationOutlineIcon size={18}/>}
+                 />
+             </div>

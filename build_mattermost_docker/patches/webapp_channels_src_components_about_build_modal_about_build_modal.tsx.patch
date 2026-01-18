@@ -1,0 +1,112 @@
+--- ./tmp_original_source/webapp/channels/src/components/about_build_modal/about_build_modal.tsx	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/webapp/channels/src/components/about_build_modal/about_build_modal.tsx	2026-01-18 03:46:24.636518555 +0100
+@@ -312,7 +312,7 @@
+                         values={{
+                             appTitle: config.SiteName || 'Mattermost',
+                         }}
+-                        defaultMessage='About {appTitle}'
++                        defaultMessage='About Mattersbearly'
+                     />
+                 </Modal.Title>
+             </Modal.Header>
+@@ -324,40 +324,12 @@
+                     <div>
+                         <h3 className='about-modal__title'>
+                             <strong>
+-                                {'Mattermost'} {title}
++                                {'Mattersbearly'}
+                             </strong>
+                         </h3>
+                         <p className='about-modal__subtitle pb-2'>
+                             {subTitle}
+                         </p>
+-                        <div className='form-group less'>
+-                            <div
+-                                className='about-modal__version-info'
+-                                data-testid='aboutModalVersionInfo'
+-                            >
+-                                {getServerVersionString()}<br/>
+-                                {isDesktopApp() && (
+-                                    <>
+-                                        {getDesktopVersionString()}<br/>
+-                                    </>
+-                                )}
+-                                {(loadMetric !== null && loadMetric > 0) && (
+-                                    <>
+-                                        {getLoadMetricString()}<br/>
+-                                    </>
+-                                )}
+-                                {getDbVersionString()}<br/>
+-                                {getBuildNumberString()}<br/>
+-                                {getDatabaseString()}<br/>
+-                                <CopyButton
+-                                    className='about-modal__version-info-copy-button'
+-                                    isForText={true}
+-                                    content={versionInfo()}
+-                                />
+-                            </div>
+-                            {serverHostname}
+-                        </div>
+-                        {licensee}
+                     </div>
+                 </div>
+                 <div className='about-modal__footer'>
+@@ -366,24 +338,19 @@
+                         <div className='about-modal__copyright'>
+                             <FormattedMessage
+                                 id='about.copyright'
+-                                defaultMessage='Copyright 2015 - {currentYear} Mattermost, Inc. All rights reserved'
++                                defaultMessage='Mattersbearly'
+                                 values={{
+                                     currentYear: new Date().getFullYear(),
+                                 }}
+                             />
+                         </div>
+-                        <div className='about-modal__links'>
+-                            {termsOfService}
+-                            {' - '}
+-                            {privacyPolicy}
+-                        </div>
+                     </div>
+                 </div>
+                 <div className='about-modal__notice form-group pt-3'>
+                     <p>
+                         <FormattedMessage
+                             id='about.notice'
+-                            defaultMessage='Mattermost is made possible by the open source software used in our <linkServer>server</linkServer>, <linkDesktop>desktop</linkDesktop> and <linkMobile>mobile</linkMobile> apps.'
++                            defaultMessage='Mattersbearly is made possible by the open source software used in our <linkServer>server</linkServer>, <linkDesktop>desktop</linkDesktop> and <linkMobile>mobile</linkMobile> apps.'
+                             values={{
+                                 linkServer: (msg: React.ReactNode) => (
+                                     <ExternalLink
+@@ -413,31 +380,6 @@
+                         />
+                     </p>
+                 </div>
+-                <div className='about-modal__hash'>
+-                    <p>
+-                        <FormattedMessage
+-                            id='about.hash'
+-                            defaultMessage='Build Hash:'
+-                        />
+-                        <Nbsp/>
+-                        {config.BuildHash}
+-                        <br/>
+-                        <FormattedMessage
+-                            id='about.hashee'
+-                            defaultMessage='EE Build Hash:'
+-                        />
+-                        <Nbsp/>
+-                        {config.BuildHashEnterprise}
+-                    </p>
+-                    <p>
+-                        <FormattedMessage
+-                            id='about.date'
+-                            defaultMessage='Build Date:'
+-                        />
+-                        <Nbsp/>
+-                        {config.BuildDate}
+-                    </p>
+-                </div>
+             </Modal.Body>
+         </Modal>
+     );

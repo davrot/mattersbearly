@@ -1,0 +1,14 @@
+--- ./tmp_original_source/webapp/channels/src/components/global_header/left_controls/product_menu/product_menu.tsx	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/webapp/channels/src/components/global_header/left_controls/product_menu/product_menu.tsx	2026-01-18 02:57:15.707186072 +0100
+@@ -135,11 +135,6 @@
+                             size={20}
+                             color='rgba(var(--sidebar-text-rgb), 0.56)'
+                         />
+-                        {isFreeEdition ? (
+-                            <ProductBrandingFreeEdition/>
+-                        ) : (
+-                            <ProductBranding/>
+-                        )}
+                     </ProductMenuButton>
+                 </ProductMenuContainer>
+                 <Menu
