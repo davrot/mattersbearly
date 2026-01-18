@@ -23,6 +23,7 @@ This project is just a proof of concept. It is not a fork of Mattermost https://
   - webapp_channels_src_components_initial_loading_screen_initial_loading_screen.css.patch
 - Select team is still Mattmost branded
 - Initial tour is still Mattmost branded
+- Admin console -> Mattermost Users -> remove Permium export button.
 
 # OIDC
 
