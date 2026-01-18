@@ -19,8 +19,8 @@ echo "package shared" > mattersource/server/enterprise/message_export/shared/sha
 cp -rvf ./enterprise_replace/* mattersource/
 cp -f logo/* mattersource/webapp/channels/src/images
 cp -f favicon/* mattersource/webapp/channels/src/images/favicon
-# cp -f logo_dark_blue_svg.tsx mattersource/webapp/channels/src/components/common/svg_images_components/logo_dark_blue_svg.tsx
-# cp -f mattermost_logo.tsx mattersource/webapp/channels/src/components/widgets/icons/mattermost_logo.tsx
+cp -f logo_dark_blue_svg.tsx mattersource/webapp/channels/src/components/common/svg_images_components/logo_dark_blue_svg.tsx
+cp -f mattermost_logo.tsx mattersource/webapp/channels/src/components/widgets/icons/mattermost_logo.tsx
 
 rm -rf mattersource/server/cmd/mmctl/commands/compliance
 rm -f mattersource/server/cmd/mmctl/commands/compliance_export.go
