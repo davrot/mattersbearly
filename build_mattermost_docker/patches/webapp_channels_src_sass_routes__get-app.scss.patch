@@ -1,0 +1,11 @@
+--- ./tmp_original_source/webapp/channels/src/sass/routes/_get-app.scss	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/webapp/channels/src/sass/routes/_get-app.scss	2026-01-18 17:58:19.436570346 +0100
+@@ -10,7 +10,7 @@
+     box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2);
+ 
+     .get-app__logo {
+-        width: 255px;
++        width: 465px;
+         height: auto;
+         margin: 30px 40px;
+     }
