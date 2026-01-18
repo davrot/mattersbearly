@@ -14,10 +14,10 @@ Tested with mattermost version 11.3.0.
 - Build scripts for with / without docker image 
 
 # Space for improvement
-- The loading message is not shown: 
+- The loading message is too small: 
   - webapp_channels_src_components_initial_loading_screen_initial_loading_screen.css.patch
-  - webapp_channels_src_components_initial_loading_screen_initial_loading_screen_template.html.patch
-- I thought I modified the dropdown navbar. But nope. It is hiding somewhere in mattersource/webapp
+- I thought I modified the dropdown navbar. But nope. It is hiding somewhere in mattersource/webapp -> About Mattermost
+- landing page: Logo cut off
 - I have the feeling that the OIDC fields are not correctly assigned (but my SSO is strangely configured; Full name is okay. eMail is in Admin console okay but I don't see it in the profile. *And Nickname: I don't see it all*; username is email or preferred_username which has the same value on my SSO).
   -  **mattersource/server/einterfaces/oidc.go** : func userFromOIDCUser
     -  user.Username <- oidcUser.Nickname (if not empty otherwise oidcUser.Email without @) <- json:"preferred_username"
