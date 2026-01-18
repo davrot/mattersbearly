@@ -17,6 +17,8 @@ Tested with mattermost version 11.3.0.
 - The loading message is not shown: 
   - webapp_channels_src_components_initial_loading_screen_initial_loading_screen.css.patch
   - webapp_channels_src_components_initial_loading_screen_initial_loading_screen_template.html.patch
+- The about modal needs love:
+  - mattersource/webapp/channels/src/components/about_build_modal/about_build_modal.tsx
   
  
 # Installation notes 
