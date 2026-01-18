@@ -19,7 +19,12 @@ Tested with mattermost version 11.3.0.
   - webapp_channels_src_components_initial_loading_screen_initial_loading_screen_template.html.patch
 - The about modal needs love:
   - mattersource/webapp/channels/src/components/about_build_modal/about_build_modal.tsx
-  
+- I have the feeling that the OIDC fields are not correctly assigned.
+  -  mattersource/server/einterfaces/oidc.go : func userFromOIDCUser
+  -  mattersource/server/channels/app/oidc.go : func FindOrCreateOIDCUser, func generateUsernameFromOIDC, func UpdateUserFromOIDC
+  -  mattersource/server/public/model/user.go : type User struct
+  - If the env are set to MM_LOGSETTINGS_CONSOLELEVEL: DEBUG and MM_LOGSETTINGS_FILELEVEL: DEBUG , you can see the raw OIDC info in the mattermost log
+
  
 # Installation notes 
 
