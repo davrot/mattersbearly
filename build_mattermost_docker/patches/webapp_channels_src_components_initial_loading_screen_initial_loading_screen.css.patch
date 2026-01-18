@@ -1,0 +1,31 @@
+--- ./tmp_original_source/webapp/channels/src/components/initial_loading_screen/initial_loading_screen.css	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/webapp/channels/src/components/initial_loading_screen/initial_loading_screen.css	2026-01-18 00:27:03.578271439 +0100
+@@ -357,3 +357,28 @@
+         stroke-dashoffset: 0;
+     }
+ }
++
++/* Custom Styles for Text Replacement */
++.custom-loading-text {
++    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
++    font-size: 24px;
++    font-weight: 600;
++    color: white; /* Matches your --colour: white variable */
++    letter-spacing: 2px;
++    text-align: center;
++    text-transform: uppercase;
++    
++    /* Center it perfectly */
++    display: flex;
++    align-items: center;
++    justify-content: center;
++
++    /* Gentle pulsing animation */
++    animation: textPulse 2s ease-in-out infinite;
++}
++
++@keyframes textPulse {
++    0% { opacity: 0.3; transform: scale(0.98); }
++    50% { opacity: 1; transform: scale(1); }
++    100% { opacity: 0.3; transform: scale(0.98); }
++}
