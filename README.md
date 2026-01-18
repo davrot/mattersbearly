@@ -18,6 +18,8 @@ Tested with mattermost version 11.3.0.
   - webapp_channels_src_components_initial_loading_screen_initial_loading_screen.css.patch
 - I thought I modified the dropdown navbar. But nope. It is hiding somewhere in mattersource/webapp -> About Mattermost
 - landing page: Logo cut off
+- Select team is still Mattmost branded
+- Initial tour is still Mattmost branded
 
 # OIDC
 
