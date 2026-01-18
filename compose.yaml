@@ -15,7 +15,7 @@ services:
     environment:
       TZ: CET
       POSTGRES_USER: mmuser
-      POSTGRES_PASSWORD: REDATED
+      POSTGRES_PASSWORD: REDACTED
       POSTGRES_DB: mattermost
     networks:
       - mattermost-network
@@ -50,14 +50,14 @@ services:
     environment:
       TZ: CET
       MM_SQLSETTINGS_DRIVERNAME: postgres
-      MM_SQLSETTINGS_DATASOURCE: postgres://mmuser:REDATEDg@postgres:5432/mattermost?sslmode=disable&connect_timeout=10
+      MM_SQLSETTINGS_DATASOURCE: postgres://mmuser:REDACTEDg@postgres:5432/mattermost?sslmode=disable&connect_timeout=10
 
       MM_SERVICESETTINGS_SITEURL: https://mattermost.neuro.uni-bremen.de
       MM_BLEVESETTINGS_INDEXDIR: /mattermost/bleve-indexes
 
       MM_OIDCSETTINGS_ENABLE: true
       MM_OIDCSETTINGS_ID: mattermost
-      MM_OIDCSETTINGS_SECRET: REDATED
+      MM_OIDCSETTINGS_SECRET: REDACTED
       MM_OIDCSETTINGS_SCOPE: "openid profile email"
       MM_OIDCSETTINGS_BUTTONTEXT: "Login with Uni Bremen SSO"
       MM_OIDCSETTINGS_UPDATEUSERDETAILSONLOGIN: true
