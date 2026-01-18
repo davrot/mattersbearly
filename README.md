@@ -14,11 +14,9 @@ Tested with mattermost version 11.3.0.
 - Build scripts for with / without docker image 
 
 # Space for improvement
-- Logo needs to be white for the UI
-  - Need a light gray version of the logo as tsx file (svg -> tsx via convert_logo). Then in webapp/channels/src/components/global_header/left_controls/product_menu/product_branding_team_edition/product_branding_free_edition.tsx change the line accordingly:
-    ``` import Logo from 'components/common/svg_images_components/logo_dark_blue_svg'; ```
 
-
+  
+ 
 # Installation notes 
 
 ## Change postgress password
