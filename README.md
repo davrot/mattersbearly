@@ -21,7 +21,7 @@ Tested with mattermost version 11.3.0.
   - mattersource/webapp/channels/src/components/about_build_modal/about_build_modal.tsx
 - I thought I modified the dropdown navbar. But nope. It is hiding somewhere in mattersource/webapp
 - The logo in the UI is broken ( mattersource/webapp/channels/src/components/global_header/left_controls/product_menu/product_branding_team_edition/product_branding_free_edition.tsx). Tried to add logo_gray_svg.tsx but it broke. 
-- I have the feeling that the OIDC fields are not correctly assigned (but my SSO is strangely configured; Full name is okay. eMail and Nickname: I don't see; username is email or preferred_username).
+- I have the feeling that the OIDC fields are not correctly assigned (but my SSO is strangely configured; Full name is okay. eMail is in Admin console okay but I don't see it in the profile. *And Nickname: I don't see it all*; username is email or preferred_username which has the same value on my SSO).
   -  **mattersource/server/einterfaces/oidc.go** : func userFromOIDCUser
     -  user.Username <- oidcUser.Nickname (if not empty otherwise oidcUser.Email without @) <- json:"preferred_username"
     -  user.Email <- strings.ToLower(oidcUser.Email) <- json:"email"
