@@ -1,6 +1,6 @@
 --- /dev/null	2026-01-16 20:30:19.621000000 +0100
-+++ ./changed_files/server/channels/app/oidc.go	2026-01-17 13:28:00.608408938 +0100
-@@ -0,0 +1,287 @@
++++ ./changed_files/server/channels/app/oidc.go	2026-01-18 05:50:44.365926290 +0100
+@@ -0,0 +1,311 @@
 +// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 +// See LICENSE.txt for license information.
 +
@@ -150,12 +150,23 @@
 +		}
 +
 +		// Create new user
++        fullName := oidcUser.GivenName + " " + oidcUser.FamilyName
++        nickname := strings.TrimSpace(fullName)
++        if nickname == "" && oidcUser.Nickname != "" {
++            // Safer way to split: handles cases where there might not be an @
++            if atIndex := strings.Index(oidcUser.Nickname, "@"); atIndex != -1 {
++                nickname = oidcUser.Nickname[:atIndex]
++            } else {
++                nickname = oidcUser.Nickname
++            }
++        } 
 +		user = &model.User{
 +			Email:         strings.ToLower(oidcUser.Email),
 +			EmailVerified: oidcUser.EmailVerified,
 +			Username:      a.generateUsernameFromOIDC(oidcUser),
 +			FirstName:     oidcUser.GivenName,
 +			LastName:      oidcUser.FamilyName,
++            Nickname:      nickname,
 +			AuthService:   OIDCAuthService,
 +			AuthData:      &authData,
 +			Props:         make(map[string]string),
@@ -233,6 +244,19 @@
 +	user.LastName = oidcUser.FamilyName
 +	user.Email = strings.ToLower(oidcUser.Email)
 +	user.EmailVerified = oidcUser.EmailVerified
++
++    nickname := strings.TrimSpace(user.FirstName + " " + user.LastName)
++    if nickname == "" && oidcUser.Nickname != "" {
++        // Check for @ to avoid getting the whole email if you only want the prefix
++        if atIndex := strings.Index(oidcUser.Nickname, "@"); atIndex != -1 {
++            user.Nickname = oidcUser.Nickname[:atIndex]
++        } else {
++            user.Nickname = oidcUser.Nickname
++        }
++    } else {
++        user.Nickname = nickname
++    }
++
 +
 +	a.setUserPropsFromOIDC(user, oidcUser)
 +

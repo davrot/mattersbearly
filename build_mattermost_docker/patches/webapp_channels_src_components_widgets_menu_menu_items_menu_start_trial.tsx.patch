@@ -1,22 +1,56 @@
 --- ./tmp_original_source/webapp/channels/src/components/widgets/menu/menu_items/menu_start_trial.tsx	2026-01-05 09:02:00.000000000 +0100
-+++ ./changed_files/webapp/channels/src/components/widgets/menu/menu_items/menu_start_trial.tsx	2026-01-17 22:53:18.511725890 +0100
-@@ -77,13 +77,13 @@
-                     formatMessage(
-                         {
-                             id: 'navbar_dropdown.versionText',
++++ ./changed_files/webapp/channels/src/components/widgets/menu/menu_items/menu_start_trial.tsx	2026-01-18 05:16:19.508164873 +0100
+@@ -56,44 +56,20 @@
+             role='menuitem'
+             id={props.id}
+         >
+-            <FreeVersionBadge>{badgeText}</FreeVersionBadge>
+             <div className='editionText'>
+-                {isEntryLicense ? (
+-                    formatMessage({
+-                        id: 'navbar_dropdown.entryVersionText',
+-                        defaultMessage: 'Entry offers Enterprise Advance capabilities <link>with limits</link> designed to support evaluation.',
+-                    },
+-                    {
+-                        link: (msg: React.ReactNode) => (
+-                            <ExternalLink
+-                                location='menu_start_trial.entry-link'
+-                                href={LicenseLinks.ENTRY_LIMITS_INFO}
+-                            >
+-                                {msg}
+-                            </ExternalLink>
+-                        ),
+-                    })
+-                ) : (
+-                    formatMessage(
+-                        {
+-                            id: 'navbar_dropdown.versionText',
 -                            defaultMessage: 'This is the free <link>unsupported</link> edition of Mattermost.',
-+                            defaultMessage: 'This Mattersbearly.',
-                         },
-                         {
-                             link: (msg: React.ReactNode) => (
-                                 <ExternalLink
-                                     location='menu_start_trial.unsupported-link'
+-                        },
+-                        {
+-                            link: (msg: React.ReactNode) => (
+-                                <ExternalLink
+-                                    location='menu_start_trial.unsupported-link'
 -                                    href={LicenseLinks.UNSUPPORTED}
-+                                    href='https://github.com/davrot/mattersbearly'
-                                 >
-                                     {msg}
-                                 </ExternalLink>
-@@ -96,4 +96,4 @@
+-                                >
+-                                    {msg}
+-                                </ExternalLink>
+-                            ),
+-                        },
+-                    )
+-                )}
++                <span>
++                    This{' '}
++                    <ExternalLink
++                        location='menu_start_trial.unsupported-link'
++                        href='https://github.com/davrot/mattersbearly'
++                    >
++                        Mattersbearly
++                    </ExternalLink>
++                    .
++                </span>
+             </div>
+         </li>
      );
  };
  

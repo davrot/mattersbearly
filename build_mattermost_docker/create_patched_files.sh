@@ -1,40 +1,53 @@
 #!/bin/bash
 
-SOURCE_TAR="mattermost_source.tar.gz"
-PATCH_DIR="./patches"
-OUTPUT_DIR="./enterprise_replace"
+# Ensure variables are set
+OUTPUT_DIR="${OUTPUT_DIR:-./enterprise_replace}"
+PATCH_DIR="${PATCH_DIR:-./patches}"
+SOURCE_TAR="${SOURCE_TAR:-./mattermost_source.tar.gz}"
 
 rm -rf "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 
-echo "Step 1: Identifying target files..."
-# Get all relative paths from the patch filenames
-mapfile -t TARGET_FILES < <(ls "$PATCH_DIR"/*.patch | xargs -n1 basename | sed 's/\.patch$//' | sed 's/_/\//g')
+echo "Step 1: Processing patches..."
 
-echo "Step 2: Extracting and Patching..."
-for rel_path in "${TARGET_FILES[@]}"; do
-    patch_file="$PATCH_DIR/$(echo "$rel_path" | sed 's/\//_/g').patch"
+for patch_path in "$PATCH_DIR"/*.patch; do
+    [ -e "$patch_path" ] || continue
     
-    # Ensure the target directory exists in our output folder
-    mkdir -p "$(dirname "$OUTPUT_DIR/$rel_path")"
+    # 1. Extract raw path from +++ line
+    # 2. Strip prefix (./changed_files/ or changed_files/)
+    # 3. Clean up leading dots/slashes and trailing timestamps
+    rel_path=$(grep -m 1 "^+++ " "$patch_path" | sed -E 's|^\+\+\+ ||' | sed -E 's|^(\./)?changed_files/||' | awk '{print $1}')
 
-    # Try to extract the file from the tarball
-    # We use a wildcard to find the file regardless of the top-level folder name
-    tar -xf "$SOURCE_TAR" --wildcards -O "*/$rel_path" > "$OUTPUT_DIR/$rel_path" 2>/dev/null
+    if [ -z "$rel_path" ]; then
+        echo "❌ Error: Could not determine path in $(basename "$patch_path")"
+        continue
+    fi
 
-    if [ -s "$OUTPUT_DIR/$rel_path" ]; then
-        echo "Extracted and Patching: $rel_path"
-        patch -s -N "$OUTPUT_DIR/$rel_path" < "$patch_file"
+    target_dest="$OUTPUT_DIR/$rel_path"
+    mkdir -p "$(dirname "$target_dest")"
+
+    # Try to extract from tarball. 
+    # Using "*$rel_path" helps if the tarball has a nested root folder like 'mattermost-7.1/'
+    tar -xf "$SOURCE_TAR" --wildcards -O "*$rel_path" > "$target_dest" 2>/dev/null
+
+    if [ -s "$target_dest" ]; then
+        echo "✅ Patched: $rel_path"
+        patch -s -N "$target_dest" < "$patch_path"
     else
-        # If the file couldn't be extracted, it's likely a NEW file
-        echo "Creating New File: $rel_path"
-        # We use the patch to create the file from scratch
-        # Stripping any potential prefixes from the patch header
-        sed -e 's|^--- \./tmp_original_source/|--- |' -e 's|^+++ \./changed_files/|+++ |' "$patch_file" | patch -p0 -d "$OUTPUT_DIR" > /dev/null
+        # Fix: Use -- to tell grep the pattern isn't an option
+        if grep -q -- "--- /dev/null" "$patch_path"; then
+            echo "🆕 New File: $rel_path"
+        else
+            echo "⚠️  Warning: $rel_path not found in tarball. Creating from patch anyway."
+        fi
+        
+        # Standardize headers for the patch command to work reliably
+        sed -e "s|^--- .*|--- a/$rel_path|" -e "s|^+++ .*|+++ b/$rel_path|" "$patch_path" | \
+        patch -p1 -d "$OUTPUT_DIR" > /dev/null
     fi
 done
 
 echo "---"
 echo "Final Check: Count of files in $OUTPUT_DIR"
-find "$OUTPUT_DIR" -type f | wc -l
+find "$OUTPUT_DIR" -type f -not -empty | wc -l
 echo "---"

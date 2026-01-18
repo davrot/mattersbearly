@@ -1,6 +1,6 @@
 --- /dev/null	2026-01-16 20:30:19.621000000 +0100
-+++ ./changed_files/server/einterfaces/oidc.go	2026-01-17 13:28:00.609408940 +0100
-@@ -0,0 +1,150 @@
++++ ./changed_files/server/einterfaces/oidc.go	2026-01-18 05:45:10.464419607 +0100
+@@ -0,0 +1,159 @@
 +// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 +// See LICENSE.txt for license information.
 +
@@ -126,6 +126,15 @@
 +    userId := oidcUser.Sub
 +    user.AuthData = &userId
 +    user.AuthService = UserAuthServiceOIDC
++
++    fullName := user.FirstName + " " + user.LastName
++    nickname := strings.TrimSpace(fullName)
++    if nickname == "" {
++        parts := strings.Split(oidcUser.Nickname, "@")
++        user.Nickname = parts[0]
++    } else {
++        user.Nickname = nickname
++    }
 +
 +    return user
 +}

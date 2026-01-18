@@ -1,5 +1,5 @@
 --- ./tmp_original_source/webapp/channels/src/components/about_build_modal/about_build_modal.tsx	2026-01-05 09:02:00.000000000 +0100
-+++ ./changed_files/webapp/channels/src/components/about_build_modal/about_build_modal.tsx	2026-01-18 03:46:24.636518555 +0100
++++ ./changed_files/webapp/channels/src/components/about_build_modal/about_build_modal.tsx	2026-01-18 05:58:22.613597934 +0100
 @@ -312,7 +312,7 @@
                          values={{
                              appTitle: config.SiteName || 'Mattermost',
@@ -51,12 +51,14 @@
                      </div>
                  </div>
                  <div className='about-modal__footer'>
-@@ -366,24 +338,19 @@
+@@ -365,25 +337,20 @@
+                     <div className='form-group'>
                          <div className='about-modal__copyright'>
                              <FormattedMessage
-                                 id='about.copyright'
+-                                id='about.copyright'
 -                                defaultMessage='Copyright 2015 - {currentYear} Mattermost, Inc. All rights reserved'
-+                                defaultMessage='Mattersbearly'
++                                id='Mattersbearly is a modification of Mattermost (Mattermost, Inc. All rights reserved)'
++                                defaultMessage='Mattersbearly is a modification of Mattermost (Mattermost, Inc. All rights reserved)'
                                  values={{
                                      currentYear: new Date().getFullYear(),
                                  }}

@@ -1,13 +1,12 @@
 --- ./tmp_original_source/webapp/channels/src/components/initial_loading_screen/initial_loading_screen_template.html	2026-01-05 09:02:00.000000000 +0100
-+++ ./changed_files/webapp/channels/src/components/initial_loading_screen/initial_loading_screen_template.html	2026-01-18 00:28:59.764722705 +0100
-@@ -83,139 +83,9 @@
-         </svg>
++++ ./changed_files/webapp/channels/src/components/initial_loading_screen/initial_loading_screen_template.html	2026-01-18 05:40:36.879003608 +0100
+@@ -84,138 +84,9 @@
      </div>
      <div
--        id="initialPageLoadingAnimation"
+         id="initialPageLoadingAnimation"
 -        class="LoadingAnimation LoadingAnimation--darkMode LoadingAnimation--spinning LoadingAnimation--loading"
-+       id="initialPageLoadingAnimation"
-+       class="LoadingAnimation LoadingAnimation--darkMode LoadingAnimation--loading"
++        class="LoadingScreen__text-container"
++        style="z-index: 101; position: absolute;"
      >
 -        <svg
 -            width="104"
