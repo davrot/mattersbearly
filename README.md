@@ -1,8 +1,11 @@
 ![Matterbearly Logo](build_mattermost_docker/logo/logo.svg)
 
+
+This project is just a proof of concept. It is not a fork of Mattermost https://github.com/mattermost/mattermost. This is just a collection of scripts and patches that modify the Mattermost source code. This repository does not contain the code of the Mattermost project.   
+
 # WARNING!!!
 
-**This is just a Proof of Concept. Not a fork of Mattermost. Don't use this code until you have removed the Mattermost brand (logo and name).**
+Don't use this code until you have removed the Mattermost brand (logo and name).**
 
 Tested with mattermost version 11.3.0.
 
