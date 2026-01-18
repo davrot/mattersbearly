@@ -15,15 +15,23 @@ services:
     environment:
       TZ: CET
       POSTGRES_USER: mmuser
-      POSTGRES_PASSWORD: REDACTED
+      POSTGRES_PASSWORD: REDATED
       POSTGRES_DB: mattermost
     networks:
       - mattermost-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   mattermost:
     container_name: mattermost
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+
     image: mattermost-final:latest
     restart: unless-stopped
     security_opt:
@@ -42,18 +50,20 @@ services:
     environment:
       TZ: CET
       MM_SQLSETTINGS_DRIVERNAME: postgres
-      MM_SQLSETTINGS_DATASOURCE: postgres://mmuser:REDACTED@postgres:5432/mattermost?sslmode=disable&connect_timeout=10
+      MM_SQLSETTINGS_DATASOURCE: postgres://mmuser:REDATEDg@postgres:5432/mattermost?sslmode=disable&connect_timeout=10
 
       MM_SERVICESETTINGS_SITEURL: https://mattermost.neuro.uni-bremen.de
       MM_BLEVESETTINGS_INDEXDIR: /mattermost/bleve-indexes
 
       MM_OIDCSETTINGS_ENABLE: true
       MM_OIDCSETTINGS_ID: mattermost
-      MM_OIDCSETTINGS_SECRET: REDACTED
+      MM_OIDCSETTINGS_SECRET: REDATED
       MM_OIDCSETTINGS_SCOPE: "openid profile email"
       MM_OIDCSETTINGS_BUTTONTEXT: "Login with Uni Bremen SSO"
       MM_OIDCSETTINGS_UPDATEUSERDETAILSONLOGIN: true
       MM_OIDCSETTINGS_DISCOVERYENDPOINT: "https://sso.fb1.uni-bremen.de/sso/realms/master"
+
+      MM_PLUGINSETTINGS_ENABLEUPLOADS: true
 
       MM_LOGSETTINGS_CONSOLELEVEL: DEBUG
       MM_LOGSETTINGS_FILELEVEL: DEBUG
@@ -65,9 +75,18 @@ services:
     networks:
       - mattermost-network
 
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8065/api/v4/system/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
   nginx:
     depends_on:
-      - mattermost
+      mattermost:
+        condition: service_healthy
+
     container_name: nginx
     image: nginx:alpine
     restart: unless-stopped
@@ -95,6 +114,13 @@ services:
 
     networks:
       - mattermost-network
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsI --connect-timeout 10 http://localhost || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
 networks:
   mattermost-network:
