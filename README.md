@@ -14,7 +14,9 @@ Tested with mattermost version 11.3.0.
 - Build scripts for with / without docker image 
 
 # Space for improvement
-
+- The loading message is not shown: 
+  - webapp_channels_src_components_initial_loading_screen_initial_loading_screen.css.patch
+  - webapp_channels_src_components_initial_loading_screen_initial_loading_screen_template.html.patch
   
  
 # Installation notes 
