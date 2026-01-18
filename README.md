@@ -20,7 +20,7 @@ Tested with mattermost version 11.3.0.
 - The about modal needs love:
   - mattersource/webapp/channels/src/components/about_build_modal/about_build_modal.tsx
 - I thought I modified the dropdown navbar. But nope. It is hiding somewhere in mattersource/webapp
-- I have the feeling that the OIDC fields are not correctly assigned (but my SSO is strangely configured).
+- I have the feeling that the OIDC fields are not correctly assigned (but my SSO is strangely configured; Full name is okay. eMail and Nickname: I don't see; username is email or preferred_username).
   -  mattersource/server/einterfaces/oidc.go : func userFromOIDCUser
   -  mattersource/server/channels/app/oidc.go : func FindOrCreateOIDCUser, func generateUsernameFromOIDC, func UpdateUserFromOIDC
   -  mattersource/server/public/model/user.go : type User struct
