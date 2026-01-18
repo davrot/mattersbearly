@@ -7,7 +7,7 @@ This project is just a proof of concept. It is not a fork of Mattermost https://
 
 # WARNING!!!
 
-Don't use this code until you have removed the Mattermost brand (logo and name).**
+**Don't use this code until you have removed the Mattermost brand (logo and name).** Mattermost is a trandmark of (Mattermost, Inc. All rights reserved).
 
 # Goal
 
