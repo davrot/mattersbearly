@@ -19,6 +19,7 @@ Tested with mattermost version 11.3.0.
   - webapp_channels_src_components_initial_loading_screen_initial_loading_screen_template.html.patch
 - The about modal needs love:
   - mattersource/webapp/channels/src/components/about_build_modal/about_build_modal.tsx
+- I thought I modified the dropdown navbar. But nope. It is hiding somewhere in mattersource/webapp
 - I have the feeling that the OIDC fields are not correctly assigned (but my SSO is strangely configured).
   -  mattersource/server/einterfaces/oidc.go : func userFromOIDCUser
   -  mattersource/server/channels/app/oidc.go : func FindOrCreateOIDCUser, func generateUsernameFromOIDC, func UpdateUserFromOIDC
