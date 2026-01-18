@@ -56,6 +56,18 @@ This project is just a proof of concept. It is not a fork of Mattermost https://
 mattermost  | {"timestamp":"2026-01-18 01:16:26.284 +01:00","level":"debug","msg":"DEBUG: RAW OIDC CLAIMS FROM KEYCLOAK","caller":"einterfaces/oidc.go:64","path":"/oauth/oidc/complete","request_id":"7x8tams1ktdgbnuht3x8r461th","ip_addr":"172.19.0.4","user_id":"","method":"GET","claims":{"acr":"1","at_hash":"zg5hBV5m4cTeFj0ENXAsqw","aud":"mattermost","auth_time":1768695386,"azp":"mattermost","email":"davrot@uni-bremen.de","email_verified":true,"exp":1768695446,"family_name":"Rotermund","given_name":"David","iat":1768695386,"iss":"https://sso.fb1.uni-bremen.de/sso/realms/master","jti":"334f8eef-fd9b-4a5b-9d6f-4ab46b1904ae","locale":"en","name":"David Rotermund","preferred_username":"davrot@uni-bremen.de","sid":"e3645393-e1ec-4d7d-afb6-166061c9ebc1","sub":"496667d6-2ef6-4f9a-8fda-2ead5e22e7b5","typ":"ID"}}
 ```
 
+## Old GIT Lab setting
+
+As comparison
+- user.Username <- json:"username" or if empty json:"login"
+- user.Email <- strings.ToLower(json:"email")
+- user.EmailVerified <- Not assigned
+- user.Nickname <- Not assigned
+- user.FirstName <- explode json:"name" at space : first segment  or if empty glu.Name
+- user.LastName <- explode json:"name" at space : rest segments 
+- user.AuthData <- json:"id"
+- user.AuthService <- "gitlab"
+
 ## Env Settings
 ```
 MM_OIDCSETTINGS_ENABLE=true
