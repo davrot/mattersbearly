@@ -23,13 +23,13 @@ Tested with mattermost version 11.3.0.
 - The logo in the UI is broken ( mattersource/webapp/channels/src/components/global_header/left_controls/product_menu/product_branding_team_edition/product_branding_free_edition.tsx). Tried to add logo_gray_svg.tsx but it broke. 
 - I have the feeling that the OIDC fields are not correctly assigned (but my SSO is strangely configured; Full name is okay. eMail and Nickname: I don't see; username is email or preferred_username).
   -  mattersource/server/einterfaces/oidc.go : func userFromOIDCUser
-    -  user.Username <- oidcUser.Nickname (if not empty otherwise oidcUser.Email without @)
-    -  user.Email <- strings.ToLower(oidcUser.Email)
-    -  user.EmailVerified <- oidcUser.EmailVerified
-    -  user.Nickname <- Not assigned
-    -  user.FirstName <- oidcUser.GivenName
-    -  user.LastName <- oidcUser.FamilyName
-    -  user.AuthData <- oidcUser.Sub
+    -  user.Username <- oidcUser.Nickname (if not empty otherwise oidcUser.Email without @) <- json:"preferred_username"
+    -  user.Email <- strings.ToLower(oidcUser.Email) <- json:"email"
+    -  user.EmailVerified <- oidcUser.EmailVerified <- json:"email_verified"
+    -  user.Nickname <- Not assigned(!!!)
+    -  user.FirstName <- oidcUser.GivenName <- json:"given_name"
+    -  user.LastName <- oidcUser.FamilyName <- json:"family_name"
+    -  user.AuthData <- oidcUser.Sub <- json:"sub"
     -  user.AuthService <- "oidc"    
   -  mattersource/server/channels/app/oidc.go : func FindOrCreateOIDCUser, func generateUsernameFromOIDC, func UpdateUserFromOIDC
     -  user.Username
