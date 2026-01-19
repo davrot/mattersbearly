@@ -7,7 +7,25 @@ This project is just a proof of concept. It is not a fork of Mattermost https://
 
 # WARNING!!!
 
-**Don't use this code until you have removed the Mattermost brand (logo and name).** 
+**Don't use this code until you have removed the original Mattermost brand (logo and name).** 
+
+For details see here: https://docs.mattermost.com/product-overview/faq-license.html#how-can-i-create-an-open-source-derivative-work-of-mattermost
+
+Concerning https://docs.mattermost.com/product-overview/faq-mattermost-source-available-license.html#how-can-i-identify-code-licensed-as-source-available the server/enterprise folder is deleted and replace by 
+```
+echo "package enterprise" > mattersource/server/enterprise/enterprise.go
+echo "package metrics" > mattersource/server/enterprise/metrics/metrics.go
+echo "package shared" > mattersource/server/enterprise/message_export/shared/shared.go
+```
+
+Concerning the logo 
+```
+webapp/channels/src/images
+webapp/channels/src/images/favicon
+webapp/channels/src/components/common/svg_images_components/logo_dark_blue_svg.tsx
+webapp/channels/src/components/widgets/icons/mattermost_logo.tsx
+```
+are modifed. 
 
 [Mattermost](https://mattermost.com/) is a trandmark of (Mattermost, Inc. All rights reserved).
 
@@ -19,11 +37,8 @@ This project is just a proof of concept. It is not a fork of Mattermost https://
 - Build scripts for with / without docker image 
 
 # Space for improvement
-- The loading message is too small: 
-  - webapp_channels_src_components_initial_loading_screen_initial_loading_screen.css.patch
-- Select team is still Mattmost branded
-- Initial tour is still Mattmost branded
-- Admin console -> Mattermost Users -> remove Permium export button.
+- Reove the start trial modal.
+
 
 # OIDC
 
