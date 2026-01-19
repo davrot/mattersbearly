@@ -37,7 +37,7 @@ are modifed.
 - Build scripts for with / without docker image 
 
 # Space for improvement
-- Reove the start trial modal.
+- Remove the start trial modal.
 
 
 # OIDC
