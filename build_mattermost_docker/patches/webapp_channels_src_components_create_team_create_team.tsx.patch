@@ -1,0 +1,11 @@
+--- ./tmp_original_source/webapp/channels/src/components/create_team/create_team.tsx	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/webapp/channels/src/components/create_team/create_team.tsx	2026-01-19 11:38:27.749120049 +0100
+@@ -72,7 +72,7 @@
+             id: 'create_team.pageTitle',
+             defaultMessage: 'Create a team - {siteName}',
+         }, {
+-            siteName: this.props.siteName || 'Mattermost',
++            siteName: this.props.siteName || 'Mattersbearly',
+         });
+     }
+ 

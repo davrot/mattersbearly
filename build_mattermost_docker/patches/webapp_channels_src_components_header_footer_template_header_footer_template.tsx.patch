@@ -1,0 +1,67 @@
+--- ./tmp_original_source/webapp/channels/src/components/header_footer_template/header_footer_template.tsx	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/webapp/channels/src/components/header_footer_template/header_footer_template.tsx	2026-01-19 14:43:44.217288614 +0100
+@@ -47,54 +47,13 @@
+                 id='about_link'
+                 className='footer-link'
+                 location='header_footer_template'
+-                href={config.AboutLink}
++                href={'https://github.com/davrot/mattersbearly'}
+             >
+                 {formatMessage({id: 'web.footer.about', defaultMessage: 'About'})}
+             </ExternalLink>,
+         );
+     }
+ 
+-    if (config.PrivacyPolicyLink) {
+-        content.push(
+-            <ExternalLink
+-                key='privacy_link'
+-                id='privacy_link'
+-                className='footer-link'
+-                location='header_footer_template'
+-                href={config.PrivacyPolicyLink}
+-            >
+-                {formatMessage({id: 'web.footer.privacy', defaultMessage: 'Privacy Policy'})}
+-            </ExternalLink>,
+-        );
+-    }
+-
+-    if (config.TermsOfServiceLink) {
+-        content.push(
+-            <ExternalLink
+-                key='terms_link'
+-                id='terms_link'
+-                className='footer-link'
+-                location='header_footer_template'
+-                href={config.TermsOfServiceLink}
+-            >
+-                {formatMessage({id: 'web.footer.terms', defaultMessage: 'Terms'})}
+-            </ExternalLink>,
+-        );
+-    }
+-
+-    if (config.HelpLink) {
+-        content.push(
+-            <ExternalLink
+-                key='help_link'
+-                id='help_link'
+-                className='footer-link'
+-                location='header_footer_template'
+-                href={config.HelpLink}
+-            >
+-                {formatMessage({id: 'web.footer.help', defaultMessage: 'Help'})}
+-            </ExternalLink>,
+-        );
+-    }
+ 
+     return (
+         <div className='inner-wrap'>
+@@ -111,7 +70,7 @@
+                             id='company_name'
+                             className='pull-right footer-site-name'
+                         >
+-                            {'Mattermost'}
++                            {'Mattersbarely'}
+                         </span>
+                     </div>
+                     <div className='col-xs-12'>

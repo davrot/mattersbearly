@@ -1,0 +1,11 @@
+--- ./tmp_original_source/webapp/channels/src/components/team_members_dropdown/team_members_dropdown.tsx	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/webapp/channels/src/components/team_members_dropdown/team_members_dropdown.tsx	2026-01-19 11:41:09.879356439 +0100
+@@ -204,7 +204,7 @@
+                 <div>
+                     <FormattedMessage
+                         id='team_members_dropdown.confirmDemoteDescription'
+-                        defaultMessage="If you demote yourself from the System Admin role and there is not another user with System Admin privileges, you'll need to re-assign a System Admin by accessing the Mattermost server through a terminal and running the following command."
++                        defaultMessage="If you demote yourself from the System Admin role and there is not another user with System Admin privileges, you'll need to re-assign a System Admin by accessing the Mattersbearly server through a terminal and running the following command."
+                     />
+                     <br/>
+                     <br/>

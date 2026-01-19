@@ -1,0 +1,13 @@
+--- ./tmp_original_source/webapp/channels/src/components/admin_console/system_users/system_users.tsx	2026-01-05 09:02:00.000000000 +0100
++++ ./changed_files/webapp/channels/src/components/admin_console/system_users/system_users.tsx	2026-01-19 11:06:29.262315861 +0100
+@@ -497,10 +497,6 @@
+                         <SystemUsersDateRangeMenu
+                             dateRange={props.tablePropertyDateRange}
+                         />
+-                        <SystemUsersExport
+-                            currentUserId={props.currentUser.id}
+-                            usersLenght={userReports.length}
+-                        />
+                     </div>
+                     <AdminConsoleListTable<UserReport>
+                         table={table}
